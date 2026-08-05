@@ -1,0 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --ink: 60 5% 6%;
+    --paper: 45 20% 95%;
+    --paper-dim: 42 16% 90%;
+    --gray: 50 4% 44%;
+    --gray-light: 48 8% 72%;
+
+    --background: var(--paper);
+    --foreground: var(--ink);
+    --card: var(--paper);
+    --card-foreground: var(--ink);
+    --popover: var(--paper);
+    --popover-foreground: var(--ink);
+    --primary: var(--ink);
+    --primary-foreground: var(--paper);
+    --secondary: var(--paper-dim);
+    --secondary-foreground: var(--ink);
+    --muted: var(--paper-dim);
+    --muted-foreground: var(--gray);
+    --accent: var(--paper-dim);
+    --accent-foreground: var(--ink);
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 50 4% 44% / 0.18;
+    --input: 50 4% 44% / 0.3;
+    --ring: var(--ink);
+    --radius: 0px;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: 'Fraunces', serif;
+  }
+  .font-body {
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+::selection {
+  background: hsl(var(--ink));
+  color: hsl(var(--paper));
+}
+
+/* thin scrollbar, ink on paper */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: hsl(var(--paper));
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--gray-light));
+}
