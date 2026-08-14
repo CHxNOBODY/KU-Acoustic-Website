@@ -110,37 +110,5 @@ export const news: NewsItem[] = [
     title: "KU Acoustic is now open audition",
     excerpt: "Vocal, Guitar, Bass, Keyboard, Percussion, Technichian, Extra.",
     link: "https://www.instagram.com/p/DbAHm6Jkl_R/",
-  },
-  {
-    id: "n4",
-    date: "12 JUL 2026",
-    category: "Recording",
-    title: "Our first live session tape is out",
-    excerpt:
-      "Four songs recorded in one take in Music Room 2, mixed by two of our members over the semester break.",
-  },
-  {
-    id: "n3",
-    date: "25 JUN 2026",
-    category: "Recap",
-    title: "Rainy Season Sessions, in photos",
-    excerpt:
-      "A wet Saturday, a full house, and a set list built entirely from covers picked by the audience.",
-  },
-  {
-    id: "n2",
-    date: "30 APR 2026",
-    category: "Notice",
-    title: "Practice rooms move to building C",
-    excerpt:
-      "Starting next month, Tuesday and Thursday sessions move rooms while the old space gets rewired.",
-  },
-  {
-    id: "n1",
-    date: "20 MAR 2026",
-    category: "Recap",
-    title: "Thank you to everyone who came out",
-    excerpt:
-      "Songs for a Rainy Heart sold out the room. Recordings are being passed around the group chat now.",
-  },
+  }
 ];
