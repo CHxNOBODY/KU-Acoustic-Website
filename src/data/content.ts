@@ -8,6 +8,7 @@ export type Show = {
   venue: string;
   time: string;
   tag: string;
+  link?: string;
 };
 
 export const shows: Show[] = [
@@ -54,6 +55,7 @@ export const shows: Show[] = [
     venue: "Prasert Na Nagara Theatre",
     time: "16.30-20.30",
     tag: "Full Band",
+    link: "https://www.youtube.com/live/ib7OgoWOZQ8",
   },
   {
     id: "s3",
@@ -76,6 +78,7 @@ export const shows: Show[] = [
     venue: "Insee Chantarasatit Stadium",
     time: "15.40-16.15",
     tag: "Full Band",
+    link: "https://youtu.be/0EWAKp32uhI",
   },
   {
     id: "s1",

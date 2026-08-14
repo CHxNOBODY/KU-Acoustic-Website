@@ -33,43 +33,54 @@ export default function Shows() {
         </div>
 
         <div className="border-t border-foreground/15">
-          {list.map((show) => (
-            <div
-              key={show.id}
-              className="group grid grid-cols-[auto_1px_1fr_auto] md:grid-cols-[6rem_1px_1fr_auto_auto] items-center gap-x-5 md:gap-x-8 py-6 border-b border-foreground/15 transition-colors hover:bg-foreground hover:text-background px-2 -mx-2"
-            >
-              <div className="font-mono leading-none">
-                <div className="text-3xl md:text-4xl">{show.day}</div>
-                <div className="text-[10px] tracking-widest text-foreground/50 group-hover:text-background/60 mt-1">
-                  {show.month} {show.year}
+          {list.map((show) => {
+            const Wrapper = show.link ? "a" : "div";
+
+            return (
+              <Wrapper
+                key={show.id}
+                {...(show.link
+                  ? { href: show.link, target: "_blank", rel: "noopener noreferrer" }
+                  : {})}
+                className={`group grid grid-cols-[auto_1px_1fr_auto] md:grid-cols-[6rem_1px_1fr_auto_auto] items-center gap-x-5 md:gap-x-8 py-6 border-b border-foreground/15 transition-colors hover:bg-foreground hover:text-background px-2 -mx-2 ${
+                  show.link ? "cursor-pointer" : ""
+                }`}
+              >
+                <div className="font-mono leading-none">
+                  <div className="text-3xl md:text-4xl">{show.day}</div>
+                  <div className="text-[10px] tracking-widest text-foreground/50 group-hover:text-background/60 mt-1">
+                    {show.month} {show.year}
+                  </div>
                 </div>
-              </div>
 
-              <div
-                className="self-stretch w-px bg-foreground/20 group-hover:bg-background/25"
-                style={{
-                  backgroundImage:
-                    "repeating-linear-gradient(to bottom, currentColor 0 4px, transparent 4px 9px)",
-                }}
-              />
+                <div
+                  className="self-stretch w-px bg-foreground/20 group-hover:bg-background/25"
+                  style={{
+                    backgroundImage:
+                      "repeating-linear-gradient(to bottom, currentColor 0 4px, transparent 4px 9px)",
+                  }}
+                />
 
-              <div className="min-w-0">
-                <h3 className="font-display text-xl md:text-2xl truncate">{show.title}</h3>
-                <p className="font-body text-sm text-foreground/60 group-hover:text-background/70 mt-1">
-                  {show.venue} · {show.time}
-                </p>
-              </div>
+                <div className="min-w-0">
+                  <h3 className="font-display text-xl md:text-2xl truncate">{show.title}</h3>
+                  <p className="font-body text-sm text-foreground/60 group-hover:text-background/70 mt-1">
+                    {show.venue} · {show.time}
+                  </p>
+                </div>
 
-              <div className="hidden md:block font-mono text-[10px] tracking-widest uppercase text-foreground/50 group-hover:text-background/60">
-                {show.tag}
-              </div>
+                <div className="hidden md:block font-mono text-[10px] tracking-widest uppercase text-foreground/50 group-hover:text-background/60">
+                  {show.tag}
+                </div>
 
-              <ArrowUpRight
-                size={18}
-                className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-              />
-            </div>
-          ))}
+                {show.link && (
+                  <ArrowUpRight
+                    size={18}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                  />
+                )}
+              </Wrapper>
+            );
+          })}
 
           {list.length === 0 && (
             <p className="py-16 text-center font-body text-foreground/50">
