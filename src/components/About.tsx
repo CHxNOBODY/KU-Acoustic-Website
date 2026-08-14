@@ -1,14 +1,14 @@
-const STATS = [
-  { label: "Founded", value: "2019" },
+const STATS: { label: string; value: string | string[] }[] = [
+  { label: "Founded", value: "1989" },
   { label: "Active members", value: "40+" },
-  { label: "Rehearsals", value: "Tue & Thu" },
+  { label: "Rehearsals", value: ["Mon-Fri 16:00-21:00", "Sat-Sun 13:00-18:00"] },
   { label: "Shows / year", value: "4–6" },
 ];
 
 const CONTACT = [
-  { label: "Instagram", href: "https://instagram.com" },
-  { label: "Line Open Chat", href: "#" },
-  { label: "Email", href: "mailto:hello@kuacoustic.club" },
+  { label: "Instagram", href: "https://www.instagram.com/kuacoustic_official/" },
+  { label: "Tiktok", href: "https://www.tiktok.com/@kuacousticofficial" },
+  { label: "Youtube", href: "https://www.youtube.com/@kuacoustic" },
 ];
 
 export default function About() {
@@ -22,7 +22,7 @@ export default function About() {
           <p className="font-display italic text-2xl md:text-[2rem] leading-[1.35]">
             We're a group of students who'd rather sit in a circle with a guitar than
             watch one on a screen. No auditions, no grades — just songs, borrowed
-            harmonies, and a room every Tuesday and Thursday.
+            harmonies, and a room nearly every day of the week.
           </p>
 
           <div className="flex flex-col gap-12">
@@ -32,7 +32,13 @@ export default function About() {
                   <dt className="text-foreground/45 text-[10px] tracking-widest uppercase mb-1">
                     {s.label}
                   </dt>
-                  <dd className="text-lg font-body">{s.value}</dd>
+                  <dd className="text-lg font-body leading-snug">
+                    {Array.isArray(s.value) ? (
+                      s.value.map((line) => <div key={line}>{line}</div>)
+                    ) : (
+                      s.value
+                    )}
+                  </dd>
                 </div>
               ))}
             </dl>

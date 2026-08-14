@@ -1,23 +1,67 @@
-# สรุปโครงสร้างและจุดประสงค์ของเว็บไซต์ "KU Acoustic"
+# KU Acoustic
 
-นี่คือการวิเคราะห์โครงสร้างไฟล์ HTML ที่เป็นหน้าหลัก (Entry Point) ของแอปพลิเคชันเว็บ โดยมีรายละเอียดและจุดประสงค์การทำงานดังนี้:
+Website for the KU Acoustic music club — shows, news, and club info. Built as a single-page React site with a minimal black-and-white "paper & ink" look.
 
-## 1. จุดประสงค์ของเว็บไซต์
-* **แพลตฟอร์มดนตรีระดับมหาวิทยาลัย**: ชื่อเว็บไซต์ที่ระบุไว้คือ "KU Acoustic" ซึ่งเชื่อมโยงถึงการเป็นหน้าเว็บสำหรับกิจกรรม ชมรม หรือชุมชนที่เกี่ยวข้องกับดนตรีอะคูสติกภายในมหาวิทยาลัยเกษตรศาสตร์
-* **โครงสร้างแบบ Single Page Application (SPA)**: เว็บไซต์นี้ถูกออกแบบเป็นแอปพลิเคชันที่มีการประมวลผลบนฝั่งไคลเอนต์ โดยมีแท็ก `<div id=root></div>` เป็นจุดเริ่มต้นสำหรับการวาดหน้าจอ (Rendering) ทำให้ประสบการณ์ใช้งานลื่นไหล ไม่ต้องโหลดหน้าเว็บใหม่ทั้งหมดทุกครั้งที่คลิกเปลี่ยนหน้า
-* **การใช้งานเฉพาะทาง**: โครงสร้างหน้าเว็บถูกออกแบบมาให้รองรับการโต้ตอบที่ซับซ้อน ซึ่งเหมาะสำหรับการพัฒนาต่อยอดเป็นระบบสารสนเทศทางวิทยาการคอมพิวเตอร์ หรือเครื่องมือจัดการข้อมูลทางดนตรีแบบอินเทอร์แอกทีฟ
+## Stack
 
-## 2. เทคโนโลยีและโครงสร้างที่ใช้ในการพัฒนา
-* **React Framework**: โค้ด JavaScript ที่ฝังอยู่ด้านในเป็นระบบการทำงานของ React (มีโครงสร้างการจัดการ DOM และการเรียกใช้ฟังก์ชันหลักอย่าง `createRoot`, `useMemo`, `useState`, `useEffect`) โค้ดทั้งหมดถูกบีบอัดตัวแปรให้สั้นลง (Minified) เพื่อเพิ่มความเร็วในการโหลดเมื่อใช้งานจริงบนเซิร์ฟเวอร์ (Production)
-* **CSS Framework & Styling**:
-    * โค้ดส่วน `<style>` มีการใช้ระบบสไตล์ที่มีลักษณะเป็น **Utility-first CSS** (เช่นคลาส `.flex`, `.absolute`, `.text-2xl`, `.shadow-lg`) ซึ่งเป็นรูปแบบของ Tailwind CSS
-    * ใช้ **CSS Variables** ในการควบคุมธีมสีหลักของแพลตฟอร์ม (เช่นตัวแปร `--background`, `--foreground`, `--primary`, `--ink`, `--paper`) ซึ่งโครงสร้างลักษณะนี้ถูกออกแบบมาเพื่อรองรับการสลับระหว่างธีมสว่างและธีมมืด (Light/Dark mode) ได้อย่างอิสระ
-* **Typography (การจัดวางตัวอักษร)**: มีการนำเข้าและกำหนดค่าฟอนต์ 3 รูปแบบผ่าน Google Fonts ได้แก่:
-    * **Fraunces**: ฟอนต์แบบมีหัว (Serif) สำหรับทำพาดหัว
-    * **Space Grotesk**: ฟอนต์แบบไม่มีหัว (Sans-serif) สำหรับเนื้อหาทั่วไป
-    * **JetBrains Mono**: ฟอนต์แบบ Monospace สำหรับการแสดงผลโค้ดหรือข้อมูลเฉพาะ
-* **UI Libraries**: โค้ดแสดงให้เห็นถึงการทำงานร่วมกับ UI Component ขั้นสูงที่เน้นเรื่องการเข้าถึง (Accessibility) อย่าง **Radix UI** (อ้างอิงจากคลาสและตัวแปรอย่าง `--radix-navigation-menu-viewport-height`) และยังรองรับระบบการค้นหาผ่าน Command Palette (สังเกตจากคลาส `[cmdk-group]`)
-* **Module Bundler**: โค้ดถูกมัดรวมและสร้างขึ้นโดยใช้ตัวจัดการโมดูล **Parcel** (สังเกตจากฟังก์ชัน `parcelRequirecae4`)
+- React + TypeScript
+- Tailwind CSS (+ shadcn/ui components available, mostly unused by this site)
+- Vite for local dev, Parcel to bundle into one self-contained HTML file
 
-## 3. บทสรุป
-ไฟล์เอกสารนี้ทำหน้าที่เป็น **โครงสร้างรากฐาน (Shell)** สำหรับโหลดระบบแอปพลิเคชัน "KU Acoustic" ทั้งหมด ทำหน้าที่จัดเตรียมพื้นที่หน้ากระดาษ โหลดสไตล์พื้นฐาน โหลดฟอนต์ และรันเอนจินของ React เพื่อเข้าควบคุมการแสดงผลส่วนติดต่อผู้ใช้ (User Interface) ให้พร้อมทำงาน
+## Project structure
+
+```
+src/
+  App.tsx              — assembles the page (Nav, Hero, Shows, News, About, Footer)
+  index.css            — theme: colors, fonts (Fraunces, Space Grotesk, JetBrains Mono),
+                          wave animation
+  components/
+    Nav.tsx             — sticky top navigation
+    Hero.tsx            — big wordmark + tagline
+    Shows.tsx           — Upcoming/Past toggle, ticket-stub style rows
+    News.tsx            — news list, titles link out when an item has `link`
+    About.tsx           — manifesto, stats, contact links
+    Footer.tsx          — inverted (black background) footer
+    Waveform.tsx         — the equalizer-bar motif used in Hero and Footer
+  data/
+    content.ts          — all show and news content lives here
+tailwind.config.js       — fonts, wave keyframe animation
+```
+
+## Editing content
+
+You won't usually need to touch the components. Almost everything you'd want to update lives in `src/data/content.ts`:
+
+- **`shows`** — each entry needs `status` (`"upcoming"` or `"past"`), a date, `title`, `venue`, `time`, and `tag`. The Shows section filters and sorts off this array as-is — add/remove/reorder entries directly.
+- **`news`** — each entry has `date`, `category`, `title`, `excerpt`, and an optional `link`. If `link` is set, the title becomes clickable and opens in a new tab.
+
+A few other one-off details are hardcoded in their components rather than `content.ts`:
+
+- Hero tagline — `src/components/Hero.tsx`
+- Founded year, member count, rehearsal schedule, social links — `STATS` and `CONTACT` in `src/components/About.tsx`
+- Footer address/schedule line — `src/components/Footer.tsx`
+
+## Running locally
+
+This source drop contains the custom files only (components, data, styles, Tailwind config) — it needs to sit inside a Vite + React + Tailwind + shadcn/ui scaffold to actually run. If you don't already have that scaffold:
+
+```bash
+npm create vite@latest ku-acoustic -- --template react-ts
+cd ku-acoustic
+# set up Tailwind CSS (see https://tailwindcss.com/docs/guides/vite)
+# copy this project's src/ and tailwind.config.js in, overwriting the defaults
+npm install
+npm run dev
+```
+
+Once it's running:
+
+```bash
+npm run dev      # local dev server with hot reload
+npm run build    # production build
+```
+
+## Notes
+
+- Colors, radius, and most tokens are defined as CSS variables in `src/index.css` under `:root` — change those to re-theme the site.
+- The footer is the one deliberate high-contrast moment (black background) — everything else stays on the off-white "paper" background by design.

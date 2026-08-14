@@ -8,7 +8,7 @@ export default function Hero() {
     >
       <div className="max-w-6xl mx-auto w-full">
         <p className="font-mono text-[11px] md:text-xs tracking-[0.25em] uppercase text-foreground/50 mb-6">
-          Est. 2019 — Strings, voices, no plugs
+          1989-2026 — Vocal, Guitar, Bass, Keyboard, Percussion, Extra
         </p>
 
         <h1 className="font-display leading-[0.92] tracking-tight text-[15vw] md:text-[8.5vw] lg:text-[7.2rem]">
