@@ -2,14 +2,14 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { fileURLToPath, URL } from "node:url";
 
-// This repo deploys to GitHub *project* Pages, served from
-// https://<user>.github.io/KU-Acoustic-Website/ — production assets need that
-// prefix. Dev stays on "/" so `npm run dev` is just http://localhost:5173/.
-// Moving to a custom domain or a <user>.github.io repo? Set this to "/".
-const PROD_BASE = "/KU-Acoustic-Website/";
+// The site is hosted on Vercel (ku-acoustic-website.vercel.app), which serves
+// from the domain root — so assets must be referenced from "/".
+// Only change this if you move to GitHub *project* Pages, which serves from a
+// subpath and would need "/KU-Acoustic-Website/" instead.
+const BASE = "/";
 
-export default defineConfig(({ command }) => ({
-  base: command === "build" ? PROD_BASE : "/",
+export default defineConfig(() => ({
+  base: BASE,
   plugins: [react()],
   resolve: {
     alias: {

@@ -28,7 +28,7 @@ npm run dev        # http://localhost:5173
 
 ```
 index.html                  Vite entry — page <head>, meta tags, font loading
-vite.config.ts              Build config, "@/" alias, GitHub Pages base path
+vite.config.ts              Build config, "@/" alias, deploy base path
 tailwind.config.ts          Theme: colors, fonts, wave keyframe
 tsconfig.json               TypeScript config (app + config files)
 postcss.config.js           Tailwind + autoprefixer
@@ -59,8 +59,7 @@ src/
   styles/
     index.css               Theme tokens, base styles, font utilities
 
-.github/workflows/deploy.yml  Builds and deploys to GitHub Pages on push to main
-legacy/index.html             Archived pre-Vite build (see "Legacy build" below)
+legacy/index.html           Archived pre-Vite build (see "Legacy build" below)
 ```
 
 The layout is **feature-based**: everything belonging to a section lives in its own
@@ -96,19 +95,31 @@ A few one-off details are hardcoded in their components rather than in `data/`:
 
 ## Deploying
 
-Pushing to `main` triggers `.github/workflows/deploy.yml`, which builds the site
-and publishes `dist/` to GitHub Pages.
+The site is hosted on **Vercel** at https://ku-acoustic-website.vercel.app.
 
-**One-time setup:** in the repo, go to **Settings → Pages → Build and deployment**
-and set **Source** to **GitHub Actions**. Until you do that, the workflow will run
-but the published site won't update.
+Vercel is connected to this repo and deploys automatically: push to `main` and it
+detects Vite from `package.json`, runs `npm run build`, and serves `dist/`. There's
+nothing to run by hand.
+
+- Push to `main` → production deploy
+- Open a pull request → Vercel posts a preview URL for that branch
+
+To check a build before pushing:
+
+```bash
+npm run build && npm run preview   # serves dist/ at http://localhost:4173
+```
 
 ### Base path
 
-The site is served from `https://<user>.github.io/KU-Acoustic-Website/`, so
-production builds prefix assets with `/KU-Acoustic-Website/` (`PROD_BASE` in
-`vite.config.ts`). Dev stays on `/`. If you move to a custom domain or rename the
-repo, update `PROD_BASE` — otherwise the CSS and JS will 404.
+Vercel serves from the domain root, so `BASE` in `vite.config.ts` is `"/"`. Leave it
+alone unless you change hosts — assets are referenced relative to it, so a wrong
+value makes every CSS/JS file 404 and the page renders blank while still returning
+HTTP 200.
+
+If you ever move to GitHub *project* Pages, that serves from
+`https://<user>.github.io/KU-Acoustic-Website/`, so `BASE` would need to be
+`"/KU-Acoustic-Website/"` instead.
 
 ## Legacy build
 
