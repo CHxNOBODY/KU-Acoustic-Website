@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { shows } from "@/data/content";
+import { shows } from "./shows.data";
 import { ArrowUpRight } from "lucide-react";
 
 export default function Shows() {

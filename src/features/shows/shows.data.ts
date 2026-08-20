@@ -1,15 +1,4 @@
-export type Show = {
-  id: string;
-  status: "upcoming" | "past";
-  day: string;
-  month: string;
-  year: string;
-  title: string;
-  venue: string;
-  time: string;
-  tag: string;
-  link?: string;
-};
+import type { Show } from "./types";
 
 export const shows: Show[] = [
   {
@@ -20,19 +9,8 @@ export const shows: Show[] = [
     year: "2026",
     title: "KU Acoustic Open World",
     venue: "Chakkraphan Pensiri",
-    time: "NA",
+    time: "16:00-16:40",
     tag: "Full Band",
-  },
-  {
-    id: "s5",
-    status: "upcoming",
-    day: "19",
-    month: "SEP",
-    year: "2026",
-    title: "Freshers' Welcome Session",
-    venue: "Music Room 2",
-    time: "16:00",
-    tag: "Members Only",
   },
   {
     id: "s8",
@@ -45,7 +23,7 @@ export const shows: Show[] = [
     time: "16:00-21:00",
     tag: "Full Band",
     link: "https://www.youtube.com/live/GM2EAHC6cPk?si=Jz7PvuP4fHvnWleo",
-  }, 
+  },
   {
     id: "s4",
     status: "past",
@@ -68,6 +46,7 @@ export const shows: Show[] = [
     venue: "KU Central Cafeteria 1",
     time: "17:00-18:00",
     tag: "Acoustic",
+    link: "https://www.youtube.com/live/RTk2M66fQqY?si=GMVCsWPZgfqDOhNf",
   },
   {
     id: "s2",
@@ -89,27 +68,7 @@ export const shows: Show[] = [
     year: "2026",
     title: "KU Acoustic Royal Project",
     venue: "Central World",
-    time: "18.00-20.00",
+    time: "18:00-20:00",
     tag: "Acoustic",
   },
-];
-
-export type NewsItem = {
-  id: string;
-  date: string;
-  category: string;
-  title: string;
-  excerpt: string;
-  link?: string;
-};
-
-export const news: NewsItem[] = [
-  {
-    id: "n5",
-    date: "19 JUL - 7 SEP 2026",
-    category: "Recruitment",
-    title: "KU Acoustic is now open audition",
-    excerpt: "Vocal, Guitar, Bass, Keyboard, Percussion, Technichian, Extra.",
-    link: "https://www.instagram.com/p/DbAHm6Jkl_R/",
-  }
 ];

@@ -1,4 +1,4 @@
-import Waveform from "./Waveform";
+import Waveform from "@/components/Waveform";
 
 export default function Footer() {
   return (
@@ -7,7 +7,7 @@ export default function Footer() {
         <div>
           <p className="font-display italic text-3xl md:text-4xl">KU Acoustic</p>
           <p className="font-mono text-[11px] tracking-widest uppercase text-background/50 mt-3">
-            Every Tuesday &amp; Thursday · Activity Building
+            Every Day · Activity Building
           </p>
         </div>
 

@@ -1,4 +1,4 @@
-import Waveform from "./Waveform";
+import Waveform from "@/components/Waveform";
 
 export default function Hero() {
   return (
@@ -19,8 +19,7 @@ export default function Hero() {
 
         <div className="mt-10 md:mt-14 flex flex-col md:flex-row md:items-end justify-between gap-8">
           <p className="font-body text-base md:text-lg text-foreground/70 max-w-md">
-            A campus music club for anyone who'd rather play the song than plug it in.
-            Weekly sessions, open mics, and a handful of proper shows each year.
+            We're the group of student that loves in music, and we want to share our music to everyone. We are KU Acoustic Club.
           </p>
 
           <Waveform className="md:justify-end" height={56} />

@@ -20,9 +20,8 @@ export default function About() {
 
         <div className="grid md:grid-cols-2 gap-14 md:gap-10">
           <p className="font-display italic text-2xl md:text-[2rem] leading-[1.35]">
-            We're a group of students who'd rather sit in a circle with a guitar than
-            watch one on a screen. No auditions, no grades — just songs, borrowed
-            harmonies, and a room nearly every day of the week.
+            A campus music club for anyone who loves to play music, sing, and perform. 
+            We welcome all students from any faculty to join us and share their passion for music.
           </p>
 
           <div className="flex flex-col gap-12">
