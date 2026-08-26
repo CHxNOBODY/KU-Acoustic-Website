@@ -58,8 +58,6 @@ src/
     Waveform.tsx            Equalizer-bar motif used in Hero and Footer
   styles/
     index.css               Theme tokens, base styles, font utilities
-
-legacy/index.html           Archived pre-Vite build (see "Legacy build" below)
 ```
 
 The layout is **feature-based**: everything belonging to a section lives in its own
@@ -120,17 +118,6 @@ HTTP 200.
 If you ever move to GitHub *project* Pages, that serves from
 `https://<user>.github.io/KU-Acoustic-Website/`, so `BASE` would need to be
 `"/KU-Acoustic-Website/"` instead.
-
-## Legacy build
-
-`legacy/index.html` is the previous deployment: a single 465 KB self-contained file
-produced by the old Parcel setup, with React and all styles inlined. It's kept for
-reference only — nothing builds or serves it, and editing it has no effect.
-
-Note that a few edits had been made directly to that bundled file without being
-applied back to the source, so the two had drifted. The source is now the single
-authority, reconciled to match what the bundle was serving. Once you've confirmed
-the new deployment looks right, `legacy/` is safe to delete.
 
 ## Notes
 
