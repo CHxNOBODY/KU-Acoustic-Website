@@ -1,129 +1,81 @@
 # KU Acoustic
 
-Website for the KU Acoustic music club — shows, news, and club info. A single-page
-React site with a minimal black-and-white "paper & ink" look.
+A full-stack website for Kasetsart University's acoustic music club. The design combines warm paper tones, forest green, editorial typography, and music photography with responsive layouts and accessible dialogs.
 
-## Stack
+## Features
 
-- **React 18 + TypeScript**
-- **Vite** — dev server and production build
-- **Tailwind CSS v3** — theme tokens live as CSS variables in `src/styles/index.css`
-- **lucide-react** — icons
+- Home, searchable events, journal, filterable gallery, club story, and FAQs.
+- Upcoming and past events, capacity-aware registration, direct watch-video links on cards and event details, and downloadable calendar entries. Committee members can add, replace, or clear video URLs in the event editor.
+- Membership applications for musicians, production crew, and music lovers.
+- Rehearsal requests with Bangkok opening-hour validation and overlap prevention.
+- Newsletter signup and collaboration/contact requests.
+- Protected committee dashboard: review and approve requests, export CSV, and create, edit, or remove events and journal posts.
+- Persistent SQLite storage, server-side validation, request size limits, rate limiting, and expiring HTTP-only admin sessions.
 
-## Getting started
+## Run locally
 
-```bash
+Requires **Node.js 24 or newer**. No separate database installation or additional backend dependencies are needed.
+
+```powershell
 npm install
-npm run dev        # http://localhost:5173
+Copy-Item .env.example .env
+# Edit .env and set ADMIN_TOKEN to a long, unique access key.
+npm run dev
 ```
 
-| Script              | What it does                                  |
-| ------------------- | --------------------------------------------- |
-| `npm run dev`       | Dev server with hot reload                    |
-| `npm run build`     | Typecheck, then build to `dist/`              |
-| `npm run preview`   | Serve the built `dist/` locally               |
-| `npm run typecheck` | Run TypeScript with no build                  |
+Run `npm run dev` to start both the frontend and backend. Open the local URL printed in the terminal (normally [the site](http://127.0.0.1:5173)). If backend port 3001 (or your configured `PORT`) is busy, startup automatically chooses a free port and connects Vite's `/api` proxy to it. Vite also chooses another frontend port if 5173 is busy. Open `/#admin` to use the committee dashboard. Without `ADMIN_TOKEN`, the admin endpoints stay locked; public features still work.
+
+| Command                | Purpose                                                 |
+| ---------------------- | ------------------------------------------------------- |
+| `npm run dev`          | Frontend and backend together                           |
+| `npm run dev:frontend` | Vite only                                               |
+| `npm run dev:backend`  | Backend only                                            |
+| `npm run typecheck`    | Strict TypeScript checks                                |
+| `npm test`             | API integration tests, with isolated test databases     |
+| `npm run build`        | Typecheck and production frontend build                 |
+| `npm start`            | Backend serving the API and built frontend on port 3001 |
+
+Restart the backend after changing server files or environment settings. React and CSS changes reload automatically.
 
 ## Project structure
 
-```
-index.html                  Vite entry — page <head>, meta tags, font loading
-vite.config.ts              Build config, "@/" alias, deploy base path
-tailwind.config.ts          Theme: colors, fonts, wave keyframe
-tsconfig.json               TypeScript config (app + config files)
-postcss.config.js           Tailwind + autoprefixer
-
-public/
-  favicon.svg               Waveform mark
-
-src/
-  main.tsx                  Mounts <App> into #root
-  App.tsx                   Assembles the page
-  features/                 One folder per section — component, data and types together
-    hero/
-      Hero.tsx              Big wordmark + tagline
-    shows/
-      Shows.tsx             Upcoming/Past toggle, ticket-stub rows
-      shows.data.ts         Every show, past and upcoming
-      types.ts              Show, ShowStatus
-    news/
-      News.tsx              News list, titles link out when `link` is set
-      news.data.ts          Every news item
-      types.ts              NewsItem
-    about/
-      About.tsx             Manifesto, stats, contact links
-  components/               Shared across features
-    Nav.tsx                 Sticky top navigation + mobile menu
-    Footer.tsx              Inverted (black background) footer
-    Waveform.tsx            Equalizer-bar motif used in Hero and Footer
-  styles/
-    index.css               Theme tokens, base styles, font utilities
+```text
+src/App.tsx                         Public pages and navigation
+src/styles/index.css                Responsive design system
+src/lib/api.ts                      API client and shared types
+src/components/Dialog.tsx           Accessible native modal
+src/features/community/             Application and request forms
+src/features/admin/                 Committee dashboard
+server/index.mjs                    HTTP API, sessions, database, static hosting
+server/seed.mjs                     Initial content and original show archive
+server/api.test.mjs                 Integration tests
+scripts/dev.mjs                     Development process launcher
+data/club.sqlite                    Runtime database (ignored by Git)
 ```
 
-The layout is **feature-based**: everything belonging to a section lives in its own
-folder under `features/`, so adding a section means adding one folder rather than
-touching four. Only genuinely shared pieces sit in `components/`.
+The original static feature files remain as a reference. The redesigned application fetches event and journal content from the backend. Initial content is seeded once; committee edits and deletions persist across restarts. Existing show dates and concert links are preserved in the archive.
 
-Imports use the `@/` alias for `src/` — e.g. `import Shows from "@/features/shows/Shows"`.
-Inside a feature, use relative imports (`./shows.data`). The alias is declared in
-**two** places that must stay in sync: `resolve.alias` in `vite.config.ts` and
-`compilerOptions.paths` in `tsconfig.json`.
+## Environment
 
-## Editing content
+| Variable          | Default / purpose                                                               |
+| ----------------- | ------------------------------------------------------------------------------- |
+| `PORT`            | `3001`                                                                          |
+| `HOST`            | `127.0.0.1`; use `0.0.0.0` inside a hosted container                            |
+| `DATABASE_PATH`   | `./data/club.sqlite`; requires writable persistent storage                      |
+| `ADMIN_TOKEN`     | Required for committee access; never exposed to the frontend                    |
+| `ALLOWED_ORIGINS` | Comma-separated frontend origins; local Vite origins are allowed in development |
+| `NODE_ENV`        | Use `production` behind HTTPS to enable secure session cookies                  |
 
-Almost everything you'd want to update lives in two files — you shouldn't need to
-touch the components:
+For production, build the frontend and run `npm start` on a persistent Node host behind HTTPS. Configure `ADMIN_TOKEN` and the public frontend origin, mount persistent storage for the database, and back up the SQLite database regularly. The included Dockerfile supports a persistent `/app/data` volume and runs as the unprivileged Node user.
 
-- **`src/features/shows/shows.data.ts`** — each show needs `status` (`"upcoming"` or
-  `"past"`), `day` / `month` / `year`, `title`, `venue`, `time`, and `tag`. Add an
-  optional `link` and the whole row becomes clickable, opening in a new tab. The
-  Shows section filters by `status` and renders the array in the order you write it.
-- **`src/features/news/news.data.ts`** — each item has `date`, `category`, `title`,
-  `excerpt`, and an optional `link`. With `link` set, the title becomes a link.
+**The previous Vercel static-only deployment does not run this backend.** A persistent Node/container host is needed for this SQLite architecture. A Vercel deployment would require adapting the API to serverless functions and moving storage to a hosted database. No deployment is performed by this change.
 
-A few one-off details are hardcoded in their components rather than in `data/`:
+## Content and delivery notes
 
-| What                                        | Where                              |
-| ------------------------------------------- | ---------------------------------- |
-| Hero tagline                                 | `src/features/hero/Hero.tsx`        |
-| Founded year, members, rehearsal schedule    | `STATS` in `features/about/About.tsx` |
-| Social links                                 | `CONTACT` in `features/about/About.tsx` |
-| Footer address/schedule line                 | `src/components/Footer.tsx`         |
-| Nav items                                    | `LINKS` in `components/Nav.tsx`     |
+Upcoming events are explicitly labeled **sample events**; replace them with approved club dates before launch. All photography is selected from the club's `D:\KUAC Website Picture` folder and served locally as optimized WebP assets in `public/images/club`. `sources.json` records the original file for each selection. The gallery includes club performances and candid community photos; event artwork may use representative club photography when a photo of that specific event was not supplied. Fonts load from Google Fonts. Club facts and social links are retained from the original project.
 
-## Deploying
+The image preparation scripts use Pillow and pillow-heif to orient, resize, and convert JPEG/HEIC originals into browser-ready copies. Originals remain unchanged. They are maintenance tools, not required to build or run the website. Existing database content using the previous stock photos is migrated on backend startup without resetting titles, dates, or submissions. Newly published content also defaults to local club photos.
 
-The site is hosted on **Vercel** at https://ku-acoustic-website.vercel.app.
+Applications, subscriptions, contact messages, and registrations are stored and available to the committee. **Automatic email delivery is not configured**: the committee follows up manually using the stored email addresses or exported CSV. Rehearsal requests require committee approval; the public form does not verify student identity or membership. Calendar downloads use an estimated one-hour end time, which is stated in the calendar description.
 
-Vercel is connected to this repo and deploys automatically: push to `main` and it
-detects Vite from `package.json`, runs `npm run build`, and serves `dist/`. There's
-nothing to run by hand.
-
-- Push to `main` → production deploy
-- Open a pull request → Vercel posts a preview URL for that branch
-
-To check a build before pushing:
-
-```bash
-npm run build && npm run preview   # serves dist/ at http://localhost:4173
-```
-
-### Base path
-
-Vercel serves from the domain root, so `BASE` in `vite.config.ts` is `"/"`. Leave it
-alone unless you change hosts — assets are referenced relative to it, so a wrong
-value makes every CSS/JS file 404 and the page renders blank while still returning
-HTTP 200.
-
-If you ever move to GitHub *project* Pages, that serves from
-`https://<user>.github.io/KU-Acoustic-Website/`, so `BASE` would need to be
-`"/KU-Acoustic-Website/"` instead.
-
-## Notes
-
-- Colors, radius, and other tokens are CSS variables under `:root` in
-  `src/styles/index.css` — change those to re-theme the site.
-- Fonts (Fraunces, Space Grotesk, JetBrains Mono) load via `<link>` in `index.html`
-  with `preconnect`, rather than a CSS `@import`.
-- The footer is the one deliberate high-contrast moment — everything else stays on
-  the off-white "paper" background by design.
+Tests cover validation, protected routes, sessions and logout, event capacity, duplicate registrations, newsletter deduplication, booking conflicts/opening hours, cross-origin rejection, publishing, deletion, and database persistence after restart.

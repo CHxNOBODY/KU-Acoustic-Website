@@ -18,7 +18,8 @@ export default defineConfig(() => ({
   },
   server: {
     port: 5173,
-    open: true,
+    watch: { ignored: ['**/artifacts/**', '**/data/**'] },
+    proxy: { "/api": "http://127.0.0.1:3001" },
   },
   build: {
     outDir: "dist",

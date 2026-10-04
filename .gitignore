@@ -32,3 +32,5 @@ Thumbs.db
 # tooling caches
 .parcel-cache/
 *.tsbuildinfo
+data/
+artifacts/
