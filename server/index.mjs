@@ -8,6 +8,7 @@ import { events, news, archive } from "./seed.mjs";
 export function createClubServer({
   databasePath = process.env.DATABASE_PATH || "./data/club.sqlite",
   adminToken = process.env.ADMIN_TOKEN || "",
+  handlerFactory,
 } = {}) {
   if (databasePath !== ":memory:")
     mkdirSync(dirname(resolve(databasePath)), { recursive: true });
@@ -15,6 +16,23 @@ export function createClubServer({
   db.exec(
     `PRAGMA journal_mode=WAL; CREATE TABLE IF NOT EXISTS content (kind TEXT, id TEXT, data TEXT NOT NULL, PRIMARY KEY(kind,id)); CREATE TABLE IF NOT EXISTS submissions (id TEXT PRIMARY KEY, kind TEXT NOT NULL, email TEXT NOT NULL, target TEXT, data TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'pending', created TEXT NOT NULL); CREATE UNIQUE INDEX IF NOT EXISTS unique_registration ON submissions(email,target) WHERE kind='registration'; CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY, expires INTEGER NOT NULL); CREATE TABLE IF NOT EXISTS metadata (key TEXT PRIMARY KEY);`,
   );
+  // Keep local SQLite in step with supabase/schema.sql so both backends
+  // enforce the same constraints and plan the same queries. The unique
+  // newsletter index can fail on a legacy database that already holds
+  // duplicates, so each statement is applied defensively.
+  for (const statement of [
+    "CREATE UNIQUE INDEX IF NOT EXISTS unique_newsletter ON submissions(email) WHERE kind='newsletter'",
+    "CREATE INDEX IF NOT EXISTS registration_capacity ON submissions(target) WHERE kind='registration' AND status!='rejected'",
+    "CREATE INDEX IF NOT EXISTS booking_status ON submissions(status) WHERE kind='booking'",
+    "CREATE INDEX IF NOT EXISTS submission_created ON submissions(created DESC)",
+    "CREATE INDEX IF NOT EXISTS session_expiry ON sessions(expires)",
+  ])
+    try {
+      db.exec(statement);
+    } catch (error) {
+      console.warn(`Skipped index (${error.message}).`);
+    }
+  db.prepare("DELETE FROM sessions WHERE expires < ?").run(Date.now());
   if (!db.prepare("SELECT key FROM metadata WHERE key='seeded'").get()) {
     for (const [kind, items] of [
       ["events", events],
@@ -90,6 +108,63 @@ export function createClubServer({
     }
     db.prepare("INSERT INTO metadata VALUES('event-videos-v1')").run();
   }
+  // The committee replaced the three sample upcoming events with the
+  // confirmed Loy Kra Tong show. Registrations that targeted the removed
+  // events stay in the submissions table, as committee deletion already does.
+  if (
+    !db.prepare("SELECT key FROM metadata WHERE key='loy-krathong-v1'").get()
+  ) {
+    for (const id of ["open-mic", "guitar-workshop", "sunset-session"])
+      db.prepare("DELETE FROM content WHERE kind='events' AND id=?").run(id);
+    for (const item of events)
+      db.prepare("INSERT OR IGNORE INTO content VALUES(?,?,?)").run(
+        "events",
+        item.id,
+        JSON.stringify(item),
+      );
+    db.prepare("INSERT INTO metadata VALUES('loy-krathong-v1')").run();
+  }
+  // Lan Dao is the correct venue spelling, no photo was supplied for the Loy
+  // Kra Tong show, and events no longer carry a guest limit at all.
+  if (
+    !db.prepare("SELECT key FROM metadata WHERE key='event-details-v2'").get()
+  ) {
+    for (const row of db
+      .prepare("SELECT data FROM content WHERE kind='events'")
+      .all()) {
+      const event = JSON.parse(row.data);
+      delete event.capacity;
+      if (event.id === "loy-krathong-2026") {
+        event.venue = "Lan Dao";
+        event.description = event.description.replace(/Larn Daw/g, "Lan Dao");
+        delete event.image;
+      }
+      db.prepare("UPDATE content SET data=? WHERE kind='events' AND id=?").run(
+        JSON.stringify(event),
+        event.id,
+      );
+    }
+    db.prepare("INSERT INTO metadata VALUES('event-details-v2')").run();
+  }
+  // The truck show now has its own photograph instead of a borrowed one from
+  // the Kaset Fair set. Only replace the borrowed picture, so a committee
+  // that has already chosen something else keeps it.
+  if (!db.prepare("SELECT key FROM metadata WHERE key='truck-photo-v1'").get()) {
+    const row = db
+      .prepare("SELECT data FROM content WHERE kind='events' AND id='acoustic-truck'")
+      .get();
+    if (row) {
+      const event = JSON.parse(row.data);
+      if (event.image === "kaset-guitar") {
+        event.image = "truck-community";
+        db.prepare("UPDATE content SET data=? WHERE kind='events' AND id=?").run(
+          JSON.stringify(event),
+          event.id,
+        );
+      }
+    }
+    db.prepare("INSERT INTO metadata VALUES('truck-photo-v1')").run();
+  }
   const send = (res, status, value, headers = {}) => {
     res.writeHead(status, {
       "Content-Type": "application/json",
@@ -99,8 +174,36 @@ export function createClubServer({
     });
     res.end(JSON.stringify(value));
   };
+  // A distinct type for validation failures: the previous catch block matched
+  // on message prefixes, so any new wording silently became a 500.
+  class ValidationError extends Error {}
+  const invalid = (message) => new ValidationError(message);
+  // True when a unique index caught a duplicate that raced past its lookup.
+  const duplicate = (error) =>
+    /UNIQUE constraint failed|duplicate key value/i.test(error?.message || "");
+  // The public booking form and committee reinstatement must apply the same
+  // overlap rule; one helper stops the two copies from drifting apart.
+  const overlapping = (date, hour, duration, exceptId) =>
+    db
+      .prepare(
+        `SELECT data FROM submissions WHERE kind='booking' AND status!='rejected'${exceptId ? " AND id!=?" : ""}`,
+      )
+      .all(...(exceptId ? [exceptId] : []))
+      .map((row) => JSON.parse(row.data))
+      .some(
+        (item) =>
+          item.date === date &&
+          Number(item.time.slice(0, 2)) < hour + duration &&
+          Number(item.time.slice(0, 2)) + item.duration > hour,
+      );
   const rates = new Map();
-  const server = createServer(async (req, res) => {
+  const server = createServer(handlerFactory ? handlerFactory({
+    db,
+    adminTokenDigest: adminToken ? createHash("sha256").update(adminToken).digest("hex") : undefined,
+    allowedOrigins: process.env.ALLOWED_ORIGINS,
+    production: process.env.NODE_ENV === "production",
+    trustProxy: process.env.TRUST_PROXY === "1",
+  }) : async (req, res) => {
     const url = new URL(req.url, "http://localhost");
     const path = url.pathname;
     try {
@@ -119,7 +222,10 @@ export function createClubServer({
           !allowedOrigins.includes(req.headers.origin)
         )
           return send(res, 403, { error: "Request origin is not allowed." });
-        const key = req.socket.remoteAddress;
+        const key =
+          (process.env.TRUST_PROXY === "1" &&
+            req.headers["x-forwarded-for"]?.split(",")[0].trim()) ||
+          req.socket.remoteAddress;
         const now = Date.now();
         const rate = rates.get(key);
         if (rate && rate.until > now && rate.count >= 50)
@@ -167,7 +273,7 @@ export function createClubServer({
       const field = (key, max = 200, required = true) => {
         const value = typeof body[key] === "string" ? body[key].trim() : "";
         if ((required && !value) || value.length > max)
-          throw new Error(
+          throw invalid(
             `Please provide a valid ${key} (up to ${max} characters).`,
           );
         return value;
@@ -254,26 +360,19 @@ export function createClubServer({
                   "SELECT COUNT(*) AS count FROM submissions WHERE kind='registration' AND target=? AND status!='rejected'",
                 )
                 .get(existing.target).count;
-              if (!event || occupied >= event.capacity)
+              if (!event || (event.capacity != null && occupied >= event.capacity))
                 return send(res, 409, {
                   error: "This event is no longer available or is full.",
                 });
             }
             if (existing.kind === "booking") {
               const slot = JSON.parse(existing.data);
-              const start = Number(slot.time.slice(0, 2));
-              const other = db
-                .prepare(
-                  "SELECT data FROM submissions WHERE kind='booking' AND status!='rejected' AND id!=?",
-                )
-                .all(id)
-                .map((row) => JSON.parse(row.data));
               if (
-                other.some(
-                  (item) =>
-                    item.date === slot.date &&
-                    Number(item.time.slice(0, 2)) < start + slot.duration &&
-                    Number(item.time.slice(0, 2)) + item.duration > start,
+                overlapping(
+                  slot.date,
+                  Number(slot.time.slice(0, 2)),
+                  slot.duration,
+                  id,
                 )
               )
                 return send(res, 409, {
@@ -283,7 +382,7 @@ export function createClubServer({
           }
           const result = db
             .prepare("UPDATE submissions SET status=? WHERE id=?")
-            .run(body.status, path.split("/").at(-1));
+            .run(body.status, id);
           return send(
             res,
             result.changes ? 200 : 404,
@@ -296,11 +395,11 @@ export function createClubServer({
         ) {
           const kind = field("kind");
           if (!["events", "news"].includes(kind))
-            throw new Error("Invalid content type.");
+            throw invalid("Invalid content type.");
           const title = field("title", 120);
           const date = field("date", 50);
           if (!Number.isFinite(Date.parse(date)))
-            throw new Error("Invalid date.");
+            throw invalid("Invalid date.");
           const previous =
             req.method === "PUT"
               ? db
@@ -316,45 +415,54 @@ export function createClubServer({
             title,
             date,
             category: field("category", 50),
-            image:
-              original?.image ||
-              (kind === "events" ? "royal-vocals" : "freshy-friends"),
             sample: original?.sample || false,
           };
+          if (!original)
+            item.image = kind === "events" ? "royal-vocals" : "freshy-friends";
           if (kind === "events") {
             if (Object.hasOwn(body, "link")) {
               const link = field("link", 2000, false);
               if (link) {
                 let videoUrl;
                 try { videoUrl = new URL(link); } catch {
-                  throw new Error("Please provide a valid video URL.");
+                  throw invalid("Please provide a valid video URL.");
                 }
                 if (!["https:", "http:"].includes(videoUrl.protocol) || videoUrl.username || videoUrl.password)
-                  throw new Error("Please use an http or https video link without credentials.");
+                  throw invalid("Please use an http or https video link without credentials.");
               }
               item.link = link;
             }
             Object.assign(item, {
               venue: field("venue"),
               description: field("description", 3000),
-              capacity: Number(body.capacity),
             });
-            if (
-              !Number.isInteger(item.capacity) ||
-              item.capacity < 1 ||
-              item.capacity > 10000
-            )
-              throw new Error("Capacity must be between 1 and 10000.");
-            const occupied = db
-              .prepare(
-                "SELECT COUNT(*) AS count FROM submissions WHERE kind='registration' AND target=? AND status!='rejected'",
+            // An event with no capacity is unlimited, so a blank or absent
+            // value clears any limit the event previously carried.
+            const limit =
+              typeof body.capacity === "string"
+                ? body.capacity.trim()
+                : body.capacity;
+            if (limit === "" || limit === null || limit === undefined)
+              delete item.capacity;
+            else {
+              item.capacity = Number(limit);
+              if (
+                !Number.isInteger(item.capacity) ||
+                item.capacity < 1 ||
+                item.capacity > 10000
               )
-              .get(item.id).count;
-            if (item.capacity < occupied)
-              return send(res, 409, {
-                error:
-                  "Capacity cannot be lower than the current registration count.",
-              });
+                throw invalid("Capacity must be between 1 and 10000.");
+              const occupied = db
+                .prepare(
+                  "SELECT COUNT(*) AS count FROM submissions WHERE kind='registration' AND target=? AND status!='rejected'",
+                )
+                .get(item.id).count;
+              if (item.capacity < occupied)
+                return send(res, 409, {
+                  error:
+                    "Capacity cannot be lower than the current registration count.",
+                });
+            }
           } else
             Object.assign(item, {
               excerpt: field("excerpt", 300),
@@ -388,10 +496,10 @@ export function createClubServer({
             "contact",
           ].includes(kind)
         )
-          throw new Error("Invalid submission type.");
+          throw invalid("Invalid submission type.");
         const email = field("email", 254).toLowerCase();
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-          throw new Error("Please enter a valid email address.");
+          throw invalid("Please enter a valid email address.");
         const data = { email };
         if (kind !== "newsletter") data.name = field("name", 100);
         let target = null;
@@ -405,8 +513,11 @@ export function createClubServer({
           target = field("eventId");
           const event = list("events").find((item) => item.id === target);
           if (!event) return send(res, 404, { error: "Event not found." });
-          if (Date.parse(event.date) <= Date.now())
-            throw new Error("Registration for this event is closed.");
+          const ends = /^\d{4}-\d{2}-\d{2}$/.test(event.date)
+            ? Date.parse(`${event.date}T23:59:59+07:00`)
+            : Date.parse(event.date);
+          if (ends <= Date.now())
+            throw invalid("Registration for this event is closed.");
           if (
             db
               .prepare(
@@ -418,6 +529,7 @@ export function createClubServer({
               error: "You are already registered for this event.",
             });
           if (
+            event.capacity != null &&
             db
               .prepare(
                 "SELECT COUNT(*) AS count FROM submissions WHERE kind='registration' AND target=? AND status!='rejected'",
@@ -436,14 +548,14 @@ export function createClubServer({
             !/^\d{2}:00$/.test(data.time) ||
             ![1, 2, 3].includes(data.duration)
           )
-            throw new Error("Please choose a valid rehearsal slot.");
+            throw invalid("Please choose a valid rehearsal slot.");
           const start = new Date(`${data.date}T${data.time}:00+07:00`);
           if (
             !Number.isFinite(start.getTime()) ||
             start <= new Date() ||
             start.toISOString().slice(0, 10) !== data.date
           )
-            throw new Error("Choose a future rehearsal date.");
+            throw invalid("Choose a future rehearsal date.");
           const hour = Number(data.time.slice(0, 2));
           const weekend = [0, 6].includes(
             new Date(`${data.date}T12:00:00+07:00`).getUTCDay(),
@@ -452,21 +564,8 @@ export function createClubServer({
             hour < (weekend ? 13 : 16) ||
             hour + data.duration > (weekend ? 18 : 21)
           )
-            throw new Error("Choose a slot within club opening hours.");
-          const bookings = db
-            .prepare(
-              "SELECT data FROM submissions WHERE kind='booking' AND status!='rejected'",
-            )
-            .all()
-            .map((row) => JSON.parse(row.data));
-          if (
-            bookings.some(
-              (item) =>
-                item.date === data.date &&
-                Number(item.time.slice(0, 2)) < hour + data.duration &&
-                Number(item.time.slice(0, 2)) + item.duration > hour,
-            )
-          )
+            throw invalid("Choose a slot within club opening hours.");
+          if (overlapping(data.date, hour, data.duration))
             return send(res, 409, {
               error:
                 "This slot has already been requested. Please choose another time.",
@@ -513,28 +612,41 @@ export function createClubServer({
           error: "Build the frontend with npm run build, or use npm run dev.",
         });
       const types = {
-        ".html": "text/html",
-        ".js": "text/javascript",
-        ".css": "text/css",
+        ".html": "text/html; charset=utf-8",
+        ".js": "text/javascript; charset=utf-8",
+        ".css": "text/css; charset=utf-8",
+        ".json": "application/json; charset=utf-8",
+        ".map": "application/json; charset=utf-8",
+        ".txt": "text/plain; charset=utf-8",
+        ".webmanifest": "application/manifest+json",
         ".svg": "image/svg+xml",
+        ".ico": "image/x-icon",
         ".png": "image/png",
         ".webp": "image/webp",
         ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".woff2": "font/woff2",
       };
+      const extension = extname(file);
       res.writeHead(200, {
-        "Content-Type": types[extname(file)] || "application/octet-stream",
+        "Content-Type": types[extension] || "application/octet-stream",
         "X-Content-Type-Options": "nosniff",
+        // Vite fingerprints everything under /assets/, so those are immutable.
+        // The shell must revalidate or it would pin a stale asset manifest.
+        "Cache-Control": file.includes(`${sep}assets${sep}`)
+          ? "public, max-age=31536000, immutable"
+          : extension === ".html"
+            ? "no-cache"
+            : "public, max-age=3600",
       });
       res.end(req.method === "HEAD" ? undefined : readFileSync(file));
     } catch (error) {
-      if (
-        (error instanceof Error && error.message.startsWith("Please")) ||
-        (error instanceof Error &&
-          /^(Invalid|Capacity|Registration|Choose)/.test(error.message))
-      )
+      if (error instanceof ValidationError)
         send(res, 400, { error: error.message });
+      else if (duplicate(error))
+        send(res, 409, { error: "That submission already exists." });
       else {
-        console.error(error);
+        console.error(`${req.method} ${path} failed`, error);
         send(res, 500, { error: "Something went wrong. Please try again." });
       }
     }
@@ -542,8 +654,12 @@ export function createClubServer({
   server.on("close", () => db.close());
   return server;
 }
-if (process.argv[1] && resolve(process.argv[1]) === resolve("server/index.mjs"))
-  createClubServer().listen(
+if (process.argv[1] && resolve(process.argv[1]) === resolve("server/index.mjs")) {
+  const server = createClubServer();
+  // Containers stop with SIGTERM; closing the server also closes the database.
+  for (const signal of ["SIGTERM", "SIGINT"])
+    process.on(signal, () => server.close(() => process.exit(0)));
+  server.listen(
     Number(process.env.PORT || 3001),
     process.env.HOST || "127.0.0.1",
     () =>
@@ -551,3 +667,4 @@ if (process.argv[1] && resolve(process.argv[1]) === resolve("server/index.mjs"))
         `Club backend ready at http://127.0.0.1:${process.env.PORT || 3001}`,
       ),
   );
+}

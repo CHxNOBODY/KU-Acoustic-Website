@@ -1277,7 +1277,9 @@ svg {
 }
 .form-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  /* Auto-fit so a row of two fields keeps its halves while the event form's
+     optional start time can sit inline as a third column. */
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 15px;
 }
 .club-form .checkbox-label {

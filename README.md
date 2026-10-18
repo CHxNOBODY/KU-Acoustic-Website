@@ -10,7 +10,7 @@ A full-stack website for Kasetsart University's acoustic music club. The design 
 - Rehearsal requests with Bangkok opening-hour validation and overlap prevention.
 - Newsletter signup and collaboration/contact requests.
 - Protected committee dashboard: review and approve requests, export CSV, and create, edit, or remove events and journal posts.
-- Persistent SQLite storage, server-side validation, request size limits, rate limiting, and expiring HTTP-only admin sessions.
+- SQLite storage locally and Supabase Postgres in production, server-side validation, request size limits, rate limiting, and expiring HTTP-only admin sessions.
 
 ## Run locally
 
@@ -66,9 +66,46 @@ The original static feature files remain as a reference. The redesigned applicat
 | `ALLOWED_ORIGINS` | Comma-separated frontend origins; local Vite origins are allowed in development |
 | `NODE_ENV`        | Use `production` behind HTTPS to enable secure session cookies                  |
 
-For production, build the frontend and run `npm start` on a persistent Node host behind HTTPS. Configure `ADMIN_TOKEN` and the public frontend origin, mount persistent storage for the database, and back up the SQLite database regularly. The included Dockerfile supports a persistent `/app/data` volume and runs as the unprivileged Node user.
+For production, build the frontend and run `npm start` on a persistent Node host behind HTTPS. Configure `ADMIN_TOKEN` and the public frontend origin, mount persistent storage for the database, and back up the SQLite database regularly. The included Dockerfile supports a persistent `/app/data` volume and runs as the unprivileged Node user. The process closes the database on `SIGTERM` and `SIGINT`, so container stops are clean.
 
-**The previous Vercel static-only deployment does not run this backend.** A persistent Node/container host is needed for this SQLite architecture. A Vercel deployment would require adapting the API to serverless functions and moving storage to a hosted database. No deployment is performed by this change.
+Set `TRUST_PROXY=1` only when a trusted reverse proxy terminates the connection. Rate limiting then keys on the first `X-Forwarded-For` address instead of the socket address, which would otherwise put every visitor behind the proxy into a single bucket. Leave it unset when the host is reached directly, since the header is attacker-controlled in that case.
+
+Static delivery serves content-hashed `/assets/` files as immutable for a year and always revalidates `index.html`, which carries the asset manifest.
+
+## Supabase production backend
+
+The backend is deployed to the **KU Acoustic Website** Supabase project (`azkbfzvdqxcskqjafyfg`) in Singapore. The production API is:
+
+```text
+https://azkbfzvdqxcskqjafyfg.supabase.co/functions/v1/club-api/api
+```
+
+The `club-api` Edge Function preserves the existing routes and request/response shapes. Postgres tables live in the private `ku_acoustic` schema, with RLS enabled and no browser grants. The function authenticates every committee endpoint; content and validated public forms are intentionally open. Database transactions serialize mutations so event capacity and booking conflicts remain correct across concurrent function instances. Rate limits are stored in Postgres.
+
+The existing local content was copied to Postgres without resetting committee edits. Local SQLite and production Postgres are separate databases; local changes do not automatically sync. Local admin sessions were not migrated. The existing `ADMIN_TOKEN` still works in production: only its SHA-256 digest is stored in the private settings table. Keep the access key long and unique. Production sessions use secure HTTP-only cookies.
+
+`vercel.json` forwards the frontend's same-origin `/api/*` requests to this function, preserving committee cookies. **Redeploy the Vercel frontend to activate this proxy configuration.** The backend deployment does not itself update the hosted frontend. Direct cross-site browser committee login is not supported by the strict cookies; use the same-origin proxy. For a different frontend domain, set `ALLOWED_ORIGINS` in Supabase Edge Function secrets and update the proxy destination as needed.
+
+Deployment sources:
+
+- `supabase/schema.sql`: the schema applied as the `ku_acoustic_backend` remote migration.
+- `supabase/functions/club-api/index.ts`: Postgres transactions, persisted rate limits, CORS, and the Edge HTTP adapter.
+- `supabase/functions/club-api/handler.mjs`: portable handler generated from `server/index.mjs` by `node scripts/prepare-supabase.mjs`. Regenerate and redeploy after changing the Node API. Every transform in that script asserts that it matched and the result is parsed before it is written, so reformatting the Node API fails the build instead of silently producing a handler that drops a rule.
+- `supabase/config.toml`: local function configuration. Gateway JWT verification is disabled because the handler implements custom committee authentication and accepts public forms.
+- `scripts/export-supabase-data.mjs`: optional SQLite snapshot exporter. Run with `node --env-file=.env scripts/export-supabase-data.mjs`. Its output is in ignored `artifacts/supabase-data.sql`; it contains submission data and must stay private. Exporting does not upload or synchronize data.
+
+The function uses Supabase's built-in server-only `SUPABASE_DB_URL`; no database credentials or service keys are included in frontend code. Before redeploying, discover the installed Supabase CLI commands with `--help`, authenticate to the project, and deploy `club-api`. The Supabase connector can also deploy the three files in the function directory, explicitly setting `import_map_path` to `deno.json` when updating an existing deployment.
+
+To run the API integration suite against the portable handler in PowerShell:
+
+```powershell
+node scripts/prepare-supabase.mjs
+$env:TEST_SUPABASE_HANDLER = '1'
+npm test
+Remove-Item Env:TEST_SUPABASE_HANDLER
+```
+
+Deployment checks passed for public content, protected routes, committee login/logout, secure cookies, simultaneous registrations at capacity, newsletter deduplication, rehearsal overlap prevention, validation, and CORS. Temporary verification records were removed. Supabase's security advisor reported only informational notices about RLS tables without policies, which is intentional for this private schema with access through the backend.
 
 ## Content and delivery notes
 

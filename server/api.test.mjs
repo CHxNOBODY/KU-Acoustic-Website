@@ -1,16 +1,18 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { once } from "node:events";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, rmSync, existsSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createClubServer } from "./index.mjs";
 import { DatabaseSync } from "node:sqlite";
+import { createClubHandler } from "../supabase/functions/club-api/handler.mjs";
 
 async function setup(t, options = {}) {
   const server = createClubServer({
     databasePath: ":memory:",
     adminToken: "test-secret",
+    ...(process.env.TEST_SUPABASE_HANDLER ? { handlerFactory: createClubHandler } : {}),
     ...options,
   });
   server.listen(0, "127.0.0.1");
@@ -43,9 +45,9 @@ test("stock artwork migrates to local club photos while preserving edited conten
   );
   db.prepare("INSERT INTO content VALUES(?,?,?)").run(
     "events",
-    "open-mic",
+    "royal-project",
     JSON.stringify({
-      id: "open-mic",
+      id: "royal-project",
       title: "Committee edited title",
       image: "photo-legacy-stock",
       date: "2099-01-01",
@@ -66,10 +68,12 @@ test("stock artwork migrates to local club photos while preserving edited conten
   const request = await setup(t, { databasePath });
   t.after(() => rmSync(dir, { recursive: true, force: true }));
   const { data } = await request("/api/content");
-  assert.equal(data.events[0].image, "royal-vocals");
-  assert.equal(data.events[0].title, "Committee edited title");
-  assert.equal(data.news[0].image, "freshy-friends");
-  assert.equal(data.news[0].body, "Saved article text");
+  const migrated = data.events.find((event) => event.id === "royal-project");
+  assert.equal(migrated.image, "royal-stage");
+  assert.equal(migrated.title, "Committee edited title");
+  const article = data.news.find((item) => item.id === "custom-post");
+  assert.equal(article.image, "freshy-friends");
+  assert.equal(article.body, "Saved article text");
 });
 test("event video links can be published, preserved, replaced and cleared; unsafe URLs are rejected", async (t) => {
   const request = await setup(t);
@@ -111,7 +115,29 @@ test("public content and input validation", async (t) => {
   const request = await setup(t);
   const content = await request("/api/content");
   assert.equal(content.status, 200);
-  assert.equal(content.data.events.length, 9);
+  assert.equal(content.data.events.length, 7);
+  const loy = content.data.events.find(
+    (event) => event.id === "loy-krathong-2026",
+  );
+  assert.equal(loy.title, "Loy Kra Tong 2026");
+  assert.equal(loy.venue, "Lan Dao");
+  assert.equal(loy.category, "Full band");
+  // No start time is known yet, so the date carries no time component.
+  assert.equal(loy.date, "2026-11-23");
+  // No photo was supplied for this show.
+  assert.equal(loy.image, undefined);
+  // The truck show has its own photograph, not a borrowed Kaset Fair one.
+  assert.equal(
+    content.data.events.find((event) => event.id === "acoustic-truck").image,
+    "truck-community",
+  );
+  // No event carries a guest limit any more.
+  for (const event of content.data.events)
+    assert.equal(
+      event.capacity,
+      undefined,
+      `${event.id} still carries a capacity`,
+    );
   assert.equal(
     (
       await request("/api/submissions", {
@@ -457,4 +483,162 @@ test("cross-origin mutation is rejected and unconfigured admin remains locked", 
     },
   );
   assert.equal(response.status, 403);
+});
+
+test("built assets are served with correct types and cache lifetimes", async (t) => {
+  if (!existsSync("dist/assets") || !existsSync("dist/index.html")) {
+    t.skip("run npm run build to exercise static delivery");
+    return;
+  }
+  const server = createClubServer({
+    databasePath: ":memory:",
+    adminToken: "test-secret",
+    ...(process.env.TEST_SUPABASE_HANDLER
+      ? { handlerFactory: createClubHandler }
+      : {}),
+  });
+  server.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  t.after(() => new Promise((resolve) => server.close(resolve)));
+  const base = `http://127.0.0.1:${server.address().port}`;
+
+  const bundle = readdirSync("dist/assets").find((name) => name.endsWith(".js"));
+  const asset = await fetch(`${base}/assets/${bundle}`);
+  assert.equal(asset.status, 200);
+  assert.match(asset.headers.get("content-type"), /^text\/javascript/);
+  // Fingerprinted bundles must never be revalidated.
+  assert.equal(
+    asset.headers.get("cache-control"),
+    "public, max-age=31536000, immutable",
+  );
+
+  // The shell carries the asset manifest, so it must always be rechecked.
+  const shell = await fetch(`${base}/`);
+  assert.equal(shell.status, 200);
+  assert.match(shell.headers.get("content-type"), /^text\/html/);
+  assert.equal(shell.headers.get("cache-control"), "no-cache");
+
+  // An unknown route falls back to the shell rather than leaking the filesystem.
+  const deep = await fetch(`${base}/shows`);
+  assert.equal(deep.status, 200);
+  assert.match(deep.headers.get("content-type"), /^text\/html/);
+
+  const traversal = await fetch(`${base}/../package.json`, { redirect: "manual" });
+  assert.ok([403, 200, 301, 404].includes(traversal.status));
+  if (traversal.status === 200)
+    assert.match(traversal.headers.get("content-type"), /^text\/html/);
+});
+
+test("events without a capacity are unlimited and date-only events stay open all day", async (t) => {
+  const request = await setup(t);
+  const { cookie } = await request("/api/admin/login", {
+    token: "test-secret",
+  });
+  const base = {
+    kind: "events",
+    title: "Open gig",
+    category: "Full band",
+    venue: "Larn Daw",
+    description: "No guest list for this one.",
+  };
+
+  // Omitting capacity entirely leaves the event unlimited.
+  const open = await request(
+    "/api/admin/content",
+    { ...base, date: "2099-11-23T18:00:00+07:00" },
+    cookie,
+  );
+  assert.equal(open.status, 201);
+  assert.equal(open.data.capacity, undefined);
+  for (const email of ["a@example.com", "b@example.com", "c@example.com"])
+    assert.equal(
+      (
+        await request("/api/submissions", {
+          kind: "registration",
+          name: "Guest",
+          email,
+          eventId: open.data.id,
+        })
+      ).status,
+      201,
+    );
+
+  // The admin form posts an empty string when the field is left blank.
+  const blank = await request(
+    "/api/admin/content",
+    { ...base, title: "Blank capacity", date: "2099-11-24T18:00:00+07:00", capacity: "" },
+    cookie,
+  );
+  assert.equal(blank.status, 201);
+  assert.equal(blank.data.capacity, undefined);
+
+  // Clearing the field on an existing event removes the limit it carried.
+  const limited = await request(
+    "/api/admin/content",
+    { ...base, title: "Had a limit", date: "2099-11-25T18:00:00+07:00", capacity: 2 },
+    cookie,
+  );
+  assert.equal(limited.data.capacity, 2);
+  const cleared = await request(
+    "/api/admin/content",
+    { ...base, title: "Had a limit", date: "2099-11-25T18:00:00+07:00", id: limited.data.id, capacity: "" },
+    cookie,
+    "PUT",
+  );
+  assert.equal(cleared.status, 200);
+  assert.equal(cleared.data.capacity, undefined);
+
+  // A nonsense capacity is still rejected when one is supplied.
+  assert.equal(
+    (
+      await request(
+        "/api/admin/content",
+        { ...base, title: "Bad limit", date: "2099-11-26T18:00:00+07:00", capacity: 0 },
+        cookie,
+      )
+    ).status,
+    400,
+  );
+
+  // A date-only event accepts registrations until that day ends in Bangkok,
+  // not from UTC midnight, which would close it at 07:00 local time.
+  const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Bangkok",
+  }).format(new Date());
+  const dateOnly = await request(
+    "/api/admin/content",
+    { ...base, title: "Time to be announced", date: today },
+    cookie,
+  );
+  assert.equal(dateOnly.status, 201);
+  assert.equal(dateOnly.data.date, today);
+  assert.equal(
+    (
+      await request("/api/submissions", {
+        kind: "registration",
+        name: "Guest",
+        email: "today@example.com",
+        eventId: dateOnly.data.id,
+      })
+    ).status,
+    201,
+  );
+
+  // A date-only event in the past is closed.
+  const over = await request(
+    "/api/admin/content",
+    { ...base, title: "Last year", date: "2020-01-01" },
+    cookie,
+  );
+  assert.equal(
+    (
+      await request("/api/submissions", {
+        kind: "registration",
+        name: "Guest",
+        email: "late@example.com",
+        eventId: over.data.id,
+      })
+    ).status,
+    400,
+  );
 });

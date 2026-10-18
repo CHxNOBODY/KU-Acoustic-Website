@@ -1,39 +1,15 @@
 export const events = [
   {
-    id: "open-mic",
-    title: "A little stage. A lot of soul.",
-    category: "Open mic",
-    date: "2026-10-23T17:00:00+07:00",
-    venue: "KU Acoustic Clubroom",
+    id: "loy-krathong-2026",
+    title: "Loy Kra Tong 2026",
+    category: "Full band",
+    // Date only: the club has not announced a start time yet. An event without
+    // a time renders as "Time TBA" and exports as an all-day calendar entry.
+    date: "2026-11-23",
+    venue: "Lan Dao",
     description:
-      "Bring your favorite song, meet your next bandmate, or just come along to listen. Everyone is welcome at our acoustic open mic.",
-    capacity: 60,
-    image: "royal-vocals",
-    sample: true,
-  },
-  {
-    id: "guitar-workshop",
-    title: "Find your rhythm",
-    category: "Workshop",
-    date: "2026-11-07T14:00:00+07:00",
-    venue: "KU Acoustic Clubroom",
-    description:
-      "A relaxed introduction to guitar, from your first chords to playing with friends. All skill levels are welcome. Bring a guitar if you have one.",
-    capacity: 25,
-    image: "kaset-guitar",
-    sample: true,
-  },
-  {
-    id: "sunset-session",
-    title: "The sunset sessions",
-    category: "Live music",
-    date: "2026-11-20T17:30:00+07:00",
-    venue: "Kasetsart University, Bangkhen",
-    description:
-      "An evening of acoustic favorites and original songs with our club musicians. Settle in, slow down, and enjoy the music.",
-    capacity: 120,
-    image: "kaset-stage",
-    sample: true,
+      "Our full band plays the Loy Kra Tong celebration at Lan Dao. The start time will be announced closer to the date.",
+    sample: false,
   },
   {
     id: "run-in-rhythm",
@@ -43,7 +19,6 @@ export const events = [
     venue: "Prasert Na Nagara Theatre",
     description:
       "Revisit our Run In Rhythm concert and the people who brought it to life.",
-    capacity: 300,
     image: "run-stage",
     link: "https://www.youtube.com/live/ib7OgoWOZQ8?si=IiGXu8RoNbARWbDo",
     sample: false,
@@ -127,14 +102,13 @@ export const archive = [
   ...item,
   description:
     "From the KU Acoustic show archive. A moment of music and community from our previous website.",
-  capacity: 300,
   image:
     item.id === "royal-project"
       ? "royal-stage"
       : item.id === "freshy-day-night"
         ? "freshy-band"
         : item.id === "acoustic-truck"
-          ? "kaset-guitar"
+          ? "truck-community"
           : "kaset-stage",
   sample: false,
 }));

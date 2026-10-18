@@ -1,0 +1,6 @@
+project_id = "ku-acoustic-website"
+
+[functions.club-api]
+# Public forms and content are open; the handler authenticates committee routes.
+verify_jwt = false
+entrypoint = "./functions/club-api/index.ts"

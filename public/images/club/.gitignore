@@ -1,0 +1,8 @@
+# Camera originals stay in the photo library (D:/KUAC Website Picture);
+# only the web-ready webp renditions belong in the repo.
+*.jpg
+*.jpeg
+*.JPG
+*.JPEG
+*.HEIC
+*.png

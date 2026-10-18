@@ -27,7 +27,10 @@ import Admin from "@/features/admin/Admin";
 import {
   api,
   dateLabel,
+  eventEnd,
+  eventStart,
   photo,
+  timeKnown,
   type Article,
   type ClubEvent,
   type Content,
@@ -124,7 +127,7 @@ function EventCard({
   event: ClubEvent;
   onOpen: () => void;
 }) {
-  const past = Date.parse(event.date) < Date.now();
+  const past = eventEnd(event.date) < Date.now();
   return (
     <article className="event-card">
       <button
@@ -132,11 +135,13 @@ function EventCard({
         onClick={onOpen}
         aria-label={`View ${event.title}`}
       >
-        <img
-          src={photo(event.image, 750)}
-          alt={`${event.category}: ${event.title}`}
-          loading="lazy"
-        />
+        {event.image && (
+          <img
+            src={photo(event.image, 750)}
+            alt={`${event.category}: ${event.title}`}
+            loading="lazy"
+          />
+        )}
         <span className="date-sticker">
           <b>{dateLabel(event.date, { day: "2-digit" })}</b>
           <span>{dateLabel(event.date, { month: "short" })}</span>
@@ -158,12 +163,13 @@ function EventCard({
         <div className="event-bottom">
           <span>
             <Clock3 size={14} />
-            {new Date(event.date).toLocaleTimeString("en-GB", {
-              timeZone: "Asia/Bangkok",
-              hour: "2-digit",
-              minute: "2-digit",
-            })}{" "}
-            ICT
+            {timeKnown(event.date)
+              ? `${new Date(event.date).toLocaleTimeString("en-GB", {
+                  timeZone: "Asia/Bangkok",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })} ICT`
+              : "Time TBA"}
           </span>
           <button onClick={onOpen}>
             {past ? "View recap" : "Event details"}
@@ -321,12 +327,12 @@ export default function App() {
     setMenu(false);
   }
   const upcoming = content.events
-    .filter((event) => Date.parse(event.date) >= Date.now())
-    .sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
+    .filter((event) => eventEnd(event.date) >= Date.now())
+    .sort((a, b) => eventStart(a.date) - eventStart(b.date));
   const shownEvents = content.events
     .filter(
       (event) =>
-        Date.parse(event.date) >= Date.now() === (eventTab === "upcoming") &&
+        eventEnd(event.date) >= Date.now() === (eventTab === "upcoming") &&
         (category === "All events" || event.category === category) &&
         `${event.title} ${event.venue}`
           .toLowerCase()
@@ -334,8 +340,8 @@ export default function App() {
     )
     .sort((a, b) =>
       eventTab === "upcoming"
-        ? Date.parse(a.date) - Date.parse(b.date)
-        : Date.parse(b.date) - Date.parse(a.date),
+        ? eventStart(a.date) - eventStart(b.date)
+        : eventStart(b.date) - eventStart(a.date),
     );
   const sortedNews = [...content.news].sort(
     (a, b) => Date.parse(b.date) - Date.parse(a.date),
@@ -996,22 +1002,25 @@ export default function App() {
           title={selectedEvent.title}
           onClose={() => setSelectedEvent(null)}
         >
-          <img
-            className="dialog-cover"
-            src={photo(selectedEvent.image)}
-            alt={selectedEvent.title}
-          />
+          {selectedEvent.image && (
+            <img
+              className="dialog-cover"
+              src={photo(selectedEvent.image)}
+              alt={selectedEvent.title}
+            />
+          )}
           <span className="pill">{selectedEvent.category}</span>
           <div className="event-detail-meta">
             <p>
               <CalendarDays size={17} />
-              {dateLabel(selectedEvent.date)} ·{" "}
-              {new Date(selectedEvent.date).toLocaleTimeString("en-GB", {
-                timeZone: "Asia/Bangkok",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}{" "}
-              ICT
+              {dateLabel(selectedEvent.date)}
+              {timeKnown(selectedEvent.date)
+                ? ` · ${new Date(selectedEvent.date).toLocaleTimeString("en-GB", {
+                    timeZone: "Asia/Bangkok",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })} ICT`
+                : " · Start time to be announced"}
             </p>
             <p>
               <MapPin size={17} />
@@ -1025,17 +1034,23 @@ export default function App() {
               venue have not been confirmed by the club.
             </p>
           )}
-          {Date.parse(selectedEvent.date) >= Date.now() ? (
+          {eventEnd(selectedEvent.date) >= Date.now() ? (
             <>
               <p className="muted">
-                Free admission ·{" "}
-                {Math.max(0, selectedEvent.capacity - selectedEvent.registered)}{" "}
-                places available
+                Free admission
+                {selectedEvent.capacity != null &&
+                  ` · ${Math.max(
+                    0,
+                    selectedEvent.capacity - selectedEvent.registered,
+                  )} places available`}
               </p>
               <div className="dialog-actions">
                 <button
                   className="button green"
-                  disabled={selectedEvent.registered >= selectedEvent.capacity}
+                  disabled={
+                    selectedEvent.capacity != null &&
+                    selectedEvent.registered >= selectedEvent.capacity
+                  }
                   onClick={() => {
                     setModal({ kind: "registration", event: selectedEvent });
                     setSelectedEvent(null);
@@ -1163,7 +1178,13 @@ function downloadCalendar(event: ClubEvent) {
       .toISOString()
       .replace(/[-:]/g, "")
       .replace(/\.\d{3}/, "");
-  const start = Date.parse(event.date);
+  const start = eventStart(event.date);
+  const allDay = !timeKnown(event.date);
+  // An all-day VEVENT uses date values, and DTEND is the exclusive next day.
+  const day = (time: number) =>
+    new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok" })
+      .format(new Date(time))
+      .replace(/-/g, "");
   const text = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
@@ -1171,11 +1192,15 @@ function downloadCalendar(event: ClubEvent) {
     "BEGIN:VEVENT",
     `UID:${event.id}@kuacoustic`,
     `DTSTAMP:${stamp(Date.now())}`,
-    `DTSTART:${stamp(start)}`,
-    `DTEND:${stamp(start + 3600000)}`,
+    ...(allDay
+      ? [
+          `DTSTART;VALUE=DATE:${day(start)}`,
+          `DTEND;VALUE=DATE:${day(start + 86400000)}`,
+        ]
+      : [`DTSTART:${stamp(start)}`, `DTEND:${stamp(start + 3600000)}`]),
     `SUMMARY:${clean(event.title)}`,
     `LOCATION:${clean(event.venue)}`,
-    `DESCRIPTION:${clean(event.description + (event.sample ? " (Sample event, not a confirmed club date.)" : "") + " End time is estimated at one hour.")}`,
+    `DESCRIPTION:${clean(event.description + (event.sample ? " (Sample event, not a confirmed club date.)" : "") + (allDay ? " The start time has not been announced yet." : " End time is estimated at one hour."))}`,
     "END:VEVENT",
     "END:VCALENDAR",
   ].join("\r\n");

@@ -10,6 +10,7 @@ import {
 import {
   api,
   dateLabel,
+  timeKnown,
   type Article,
   type ClubEvent,
   type Content,
@@ -77,7 +78,11 @@ export default function Admin({
     setError("");
     setNotice("");
     const values = Object.fromEntries(new FormData(form));
-    if (kind === "events") values.date = `${values.date}:00+07:00`;
+    if (kind === "events") {
+      const time = String(values.time ?? "");
+      delete values.time;
+      values.date = time ? `${values.date}T${time}:00+07:00` : String(values.date);
+    }
     try {
       await api("/admin/content", {
         method: editing ? "PUT" : "POST",
@@ -299,22 +304,35 @@ export default function Admin({
                 Date (Bangkok)
                 <input
                   name="date"
-                  type={kind === "events" ? "datetime-local" : "date"}
+                  type="date"
                   required
                   defaultValue={
                     editing
-                      ? kind === "events"
-                        ? new Date(editing.date)
-                            .toLocaleString("sv-SE", {
-                              timeZone: "Asia/Bangkok",
-                            })
-                            .slice(0, 16)
-                            .replace(" ", "T")
-                        : editing.date.slice(0, 10)
+                      ? new Intl.DateTimeFormat("en-CA", {
+                          timeZone: "Asia/Bangkok",
+                        }).format(new Date(editing.date))
                       : ""
                   }
                 />
               </label>
+              {kind === "events" && (
+                <label>
+                  Start time (optional)
+                  <input
+                    name="time"
+                    type="time"
+                    defaultValue={
+                      editing && timeKnown(editing.date)
+                        ? new Date(editing.date)
+                            .toLocaleString("sv-SE", {
+                              timeZone: "Asia/Bangkok",
+                            })
+                            .slice(11, 16)
+                        : ""
+                    }
+                  />
+                </label>
+              )}
               <label>
                 Category
                 <input
@@ -338,14 +356,14 @@ export default function Admin({
                     />
                   </label>
                   <label>
-                    Capacity
+                    Capacity (optional)
                     <input
                       name="capacity"
                       type="number"
                       min={1}
                       max={10000}
-                      required
-                      defaultValue={eventDraft?.capacity}
+                      placeholder="No limit"
+                      defaultValue={eventDraft?.capacity ?? ""}
                     />
                   </label>
                 </div>

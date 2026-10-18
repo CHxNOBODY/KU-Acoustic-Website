@@ -5,9 +5,11 @@ export type ClubEvent = {
   date: string;
   venue: string;
   description: string;
-  capacity: number;
+  /** Absent when the event has no guest limit. */
+  capacity?: number;
   registered: number;
-  image: string;
+  /** Absent when no photo has been supplied for the event. */
+  image?: string;
   sample: boolean;
   link?: string;
 };
@@ -42,6 +44,17 @@ export async function api<T>(
     throw new Error(data.error || "The request could not be completed.");
   return data as T;
 }
+/**
+ * An event date is either a full ISO timestamp or, when the club has not
+ * announced a start time, a plain YYYY-MM-DD day.
+ */
+export const timeKnown = (date: string) => !/^\d{4}-\d{2}-\d{2}$/.test(date);
+/** A day without a time starts at midnight in Bangkok. */
+export const eventStart = (date: string) =>
+  Date.parse(timeKnown(date) ? date : `${date}T00:00:00+07:00`);
+/** ...and stays upcoming until that day ends there. */
+export const eventEnd = (date: string) =>
+  Date.parse(timeKnown(date) ? date : `${date}T23:59:59+07:00`);
 export const photo = (id: string, width = 900) =>
   `/images/club/${id}-${width}.webp`;
 export const dateLabel = (

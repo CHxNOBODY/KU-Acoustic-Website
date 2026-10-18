@@ -34,3 +34,6 @@ Thumbs.db
 *.tsbuildinfo
 data/
 artifacts/
+
+.vercel
+.env*
