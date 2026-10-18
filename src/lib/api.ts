@@ -64,8 +64,9 @@ export const dateLabel = (
     day: "numeric",
     year: "numeric",
   },
+  locale = "en-US",
 ) =>
-  new Date(date).toLocaleDateString("en-US", {
+  new Date(date).toLocaleDateString(locale, {
     ...options,
     timeZone: "Asia/Bangkok",
   });

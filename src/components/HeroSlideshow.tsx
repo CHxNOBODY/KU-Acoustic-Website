@@ -1,17 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
 import { photo } from "@/lib/api";
+import { useLang } from "@/lib/i18n";
 
 const slides = [
-  { image: "run-vocal", alt: "Vocalist in the spotlight at Run In Rhythm Concert" },
-  { image: "run-guitar", alt: "KU Acoustic guitarist performing under blue stage lights" },
-  { image: "run-duet", alt: "Two KU Acoustic singers sharing the Run In Rhythm stage" },
-  { image: "run-stage", alt: "KU Acoustic performers together on the Run In Rhythm stage" },
-  { image: "run-crowd", alt: "The audience singing along at Run In Rhythm Concert" },
-  { image: "run-family", alt: "The performers and audience together after Run In Rhythm Concert" },
+  { image: "run-vocal", alt: { en: "Vocalist in the spotlight at Run In Rhythm Concert", th: "นักร้องกลางแสงสปอตไลต์ในคอนเสิร์ต Run In Rhythm" } },
+  { image: "run-guitar", alt: { en: "KU Acoustic guitarist performing under blue stage lights", th: "มือกีตาร์ KU Acoustic เล่นใต้แสงไฟสีฟ้าบนเวที" } },
+  { image: "run-duet", alt: { en: "Two KU Acoustic singers sharing the Run In Rhythm stage", th: "นักร้อง KU Acoustic สองคนร่วมเวที Run In Rhythm" } },
+  { image: "run-stage", alt: { en: "KU Acoustic performers together on the Run In Rhythm stage", th: "นักแสดง KU Acoustic พร้อมหน้ากันบนเวที Run In Rhythm" } },
+  { image: "run-crowd", alt: { en: "The audience singing along at Run In Rhythm Concert", th: "ผู้ชมร้องตามในคอนเสิร์ต Run In Rhythm" } },
+  { image: "run-family", alt: { en: "The performers and audience together after Run In Rhythm Concert", th: "นักแสดงและผู้ชมพร้อมหน้ากันหลังคอนเสิร์ต Run In Rhythm" } },
 ];
 
 export default function HeroSlideshow() {
+  const { lang, t } = useLang();
   const root = useRef<HTMLDivElement>(null);
   const [slide, setSlide] = useState({ current: 0, previous: -1, direction: 1 });
   const [paused, setPaused] = useState(false);
@@ -61,7 +63,7 @@ export default function HeroSlideshow() {
       className="hero-slideshow"
       role="region"
       aria-roledescription="carousel"
-      aria-label="KU Acoustic concert photos"
+      aria-label={t.slideshow.label}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onFocusCapture={() => setFocused(true)}
@@ -76,30 +78,30 @@ export default function HeroSlideshow() {
             key={item.image}
             role="group"
             aria-roledescription="slide"
-            aria-label={`${index + 1} of ${slides.length}`}
+            aria-label={t.slideshow.slideOf(index + 1, slides.length)}
             aria-hidden={index !== slide.current}
             style={{ transform: `translateX(${index === slide.current ? 0 : index === slide.previous ? -slide.direction * 100 : slide.direction * 100}%)` }}
           >
-            <img className="hero-photo" src={photo(item.image, 1200)} alt={item.alt} loading="eager" decoding="async" fetchPriority={index === 0 ? "high" : "low"} />
+            <img className="hero-photo" src={photo(item.image, 1200)} alt={item.alt[lang]} loading="eager" decoding="async" fetchPriority={index === 0 ? "high" : "low"} />
           </div>
         ))}
       </div>
       <div className="hero-slide-controls">
-        <button type="button" aria-label="Previous photo" onClick={() => select(slide.current - 1, -1)}><ChevronLeft size={17} /></button>
-        <div className="hero-slide-dots" aria-label="Choose a photo">
+        <button type="button" aria-label={t.slideshow.previous} onClick={() => select(slide.current - 1, -1)}><ChevronLeft size={17} /></button>
+        <div className="hero-slide-dots" aria-label={t.slideshow.choose}>
           {slides.map((item, index) => (
             <button
               type="button"
               key={item.image}
-              aria-label={`Show photo ${index + 1}: ${item.alt}`}
+              aria-label={t.slideshow.show(index + 1, item.alt[lang])}
               aria-current={index === slide.current ? "true" : undefined}
               onClick={() => select(index, index > slide.current ? 1 : -1)}
             ><span /></button>
           ))}
         </div>
-        <button type="button" aria-label="Next photo" onClick={() => select(slide.current + 1)}><ChevronRight size={17} /></button>
+        <button type="button" aria-label={t.slideshow.next} onClick={() => select(slide.current + 1)}><ChevronRight size={17} /></button>
         {!reducedMotion && (
-          <button type="button" aria-label={paused ? "Play photo slideshow" : "Pause photo slideshow"} onClick={() => setPaused((value) => !value)}>
+          <button type="button" aria-label={paused ? t.slideshow.play : t.slideshow.pause} onClick={() => setPaused((value) => !value)}>
             {paused ? <Play size={15} /> : <Pause size={15} />}
           </button>
         )}

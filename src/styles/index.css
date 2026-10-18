@@ -27,7 +27,7 @@ body {
   margin: 0;
   background: var(--cream);
   color: var(--ink);
-  font-family: "Space Grotesk", sans-serif;
+  font-family: "Space Grotesk", "Anuphan", sans-serif;
   font-size: 14px;
   -webkit-font-smoothing: antialiased;
 }
@@ -71,7 +71,7 @@ p {
 }
 h1,
 h2 {
-  font-family: "Fraunces", Georgia, serif;
+  font-family: "Fraunces", "Mitr", Georgia, serif;
   font-weight: 400;
   letter-spacing: -1.5px;
   line-height: 1.14;
@@ -277,8 +277,43 @@ svg {
   padding: 10px 16px;
   gap: 15px;
 }
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.lang-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--green);
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+.lang-toggle:hover {
+  background: var(--sage);
+}
 .mobile-toggle {
   display: none;
+}
+/* Thai has no case and its stacked vowels and tone marks need room: drop the
+   tracking and give tight display type more leading. */
+html[lang="th"] body :not(.brand, .brand *) {
+  letter-spacing: 0;
+}
+html[lang="th"] :is(h1, h2) {
+  line-height: 1.35;
+}
+/* Mitr has no italic; keep the accent colour but don't fake a slant. */
+html[lang="th"] :is(h1, h2, h3) em,
+html[lang="th"] .handwritten {
+  font-style: normal;
 }
 .hero {
   max-width: 1260px;
@@ -462,7 +497,7 @@ svg {
   position: absolute;
   bottom: -30px;
   right: 13px;
-  font-family: "Fraunces", serif;
+  font-family: "Fraunces", "Mitr", serif;
   font-style: italic;
   color: var(--orange);
   font-size: 18px;
@@ -572,7 +607,7 @@ svg {
   gap: 0;
 }
 .date-sticker b {
-  font-family: "Fraunces", serif;
+  font-family: "Fraunces", "Mitr", serif;
   font-size: 25px;
   font-weight: 500;
   line-height: 1.2;
@@ -1105,7 +1140,7 @@ svg {
 }
 .about-stats strong {
   display: block;
-  font-family: "Fraunces", serif;
+  font-family: "Fraunces", "Mitr", serif;
   font-size: 43px;
   color: var(--green);
   font-weight: 400;
@@ -1316,7 +1351,7 @@ svg {
   margin: 0 auto 22px;
 }
 .form-success h3 {
-  font-family: "Fraunces", serif;
+  font-family: "Fraunces", "Mitr", serif;
   font-size: 28px;
 }
 .form-success p {
@@ -1391,7 +1426,7 @@ svg {
 }
 .dashboard-stats strong {
   display: block;
-  font-family: "Fraunces", serif;
+  font-family: "Fraunces", "Mitr", serif;
   font-size: 36px;
   color: var(--green);
 }
@@ -1588,8 +1623,19 @@ svg {
   .mobile-toggle {
     display: flex;
   }
-  .header-join {
+  .header-actions {
     margin-left: auto;
+    gap: 6px;
+  }
+  .lang-toggle {
+    min-height: 36px;
+    padding: 8px 9px;
+    font-size: 10px;
+  }
+  .lang-toggle svg {
+    display: none;
+  }
+  .header-join {
     font-size: 10px;
     min-height: 36px;
     padding: 8px 11px;
@@ -1974,6 +2020,18 @@ svg {
   .header-inner {
     padding: 0 15px;
     gap: 7px;
+  }
+  .header-actions {
+    gap: 4px;
+  }
+  .header-join svg {
+    display: none;
+  }
+  .lang-toggle {
+    padding: 8px 6px;
+  }
+  .mobile-toggle {
+    padding: 4px;
   }
   .brand {
     font-size: 15px;

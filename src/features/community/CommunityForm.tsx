@@ -1,7 +1,19 @@
 import { useState, type FormEvent } from "react";
 import { ArrowUpRight, CheckCircle2 } from "lucide-react";
 import { api, type ClubEvent } from "@/lib/api";
+import { useLang } from "@/lib/i18n";
 export type FormKind = "membership" | "registration" | "booking" | "contact";
+// Submitted values stay in English so the admin view reads the same either way.
+const roles = [
+  "Vocals",
+  "Guitar",
+  "Bass",
+  "Keyboard",
+  "Drums & percussion",
+  "Sound & production",
+  "Photography & creative",
+  "Music lover",
+];
 export default function CommunityForm({
   kind,
   event,
@@ -11,6 +23,7 @@ export default function CommunityForm({
   event?: ClubEvent;
   onComplete: () => void;
 }) {
+  const { t } = useLang();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -38,13 +51,13 @@ export default function CommunityForm({
         <CheckCircle2 size={48} />
         <h3>
           {kind === "registration"
-            ? "You’re on the list."
-            : "We’ve received your request."}
+            ? t.form.successRegistration
+            : t.form.successOther}
         </h3>
         <p>
           {kind === "registration"
-            ? "Your registration is saved. Keep the event date handy — we can’t wait to see you."
-            : "The club committee will review your submission and follow up using your email address."}
+            ? t.form.successRegistrationBody
+            : t.form.successOtherBody}
         </p>
       </div>
     );
@@ -52,26 +65,26 @@ export default function CommunityForm({
     <>
       <p className="form-intro">
         {kind === "membership"
-          ? "Musicians, singers, sound crew, and music lovers. There’s a place for you here — no experience required."
+          ? t.form.introMembership
           : kind === "booking"
-            ? "Request the clubroom for your next rehearsal. Weekdays 16:00–21:00 · Weekends 13:00–18:00 (Bangkok time). All requests need committee approval."
+            ? t.form.introBooking
             : kind === "contact"
-              ? "Planning a collaboration or have a question? Leave a message for our committee."
-              : `Reserve your place at ${event?.title}. Admission is free.${event?.sample ? " This is a sample event; registrations are for demonstration." : ""}`}
+              ? t.form.introContact
+              : t.form.introRegistration(event?.title ?? "", !!event?.sample)}
       </p>
       <form className="club-form" onSubmit={submit}>
         <label>
-          Your name
+          {t.form.name}
           <input
             name="name"
             autoComplete="name"
             required
             maxLength={100}
-            placeholder="First and last name"
+            placeholder={t.form.namePlaceholder}
           />
         </label>
         <label>
-          Email address
+          {t.form.email}
           <input
             name="email"
             type="email"
@@ -84,29 +97,22 @@ export default function CommunityForm({
         {kind === "membership" && (
           <>
             <label>
-              Faculty / affiliation
+              {t.form.faculty}
               <input
                 name="faculty"
                 required
                 maxLength={100}
-                placeholder="e.g. Faculty of Engineering"
+                placeholder={t.form.facultyPlaceholder}
               />
             </label>
             <label>
-              I’m interested in
+              {t.form.interested}
               <select name="role" required>
-                <option value="">Choose your role</option>
-                {[
-                  "Vocals",
-                  "Guitar",
-                  "Bass",
-                  "Keyboard",
-                  "Drums & percussion",
-                  "Sound & production",
-                  "Photography & creative",
-                  "Music lover",
-                ].map((role) => (
-                  <option key={role}>{role}</option>
+                <option value="">{t.form.chooseRole}</option>
+                {roles.map((role, i) => (
+                  <option key={role} value={role}>
+                    {t.form.roles[i]}
+                  </option>
                 ))}
               </select>
             </label>
@@ -115,7 +121,7 @@ export default function CommunityForm({
         {kind === "booking" && (
           <>
             <label>
-              Rehearsal date
+              {t.form.date}
               <input
                 name="date"
                 type="date"
@@ -127,7 +133,7 @@ export default function CommunityForm({
             </label>
             <div className="form-row">
               <label>
-                Start time
+                {t.form.startTime}
                 <select name="time" required>
                   {Array.from({ length: 8 }, (_, i) => `${i + 13}:00`).map(
                     (time) => (
@@ -137,11 +143,13 @@ export default function CommunityForm({
                 </select>
               </label>
               <label>
-                Duration
+                {t.form.duration}
                 <select name="duration">
-                  <option value="1">1 hour</option>
-                  <option value="2">2 hours</option>
-                  <option value="3">3 hours</option>
+                  {[1, 2, 3].map((hours) => (
+                    <option key={hours} value={hours}>
+                      {t.form.hours(hours)}
+                    </option>
+                  ))}
                 </select>
               </label>
             </div>
@@ -149,7 +157,7 @@ export default function CommunityForm({
         )}
         {kind !== "registration" && (
           <label>
-            {kind === "contact" ? "Your message" : "Anything else? (optional)"}
+            {kind === "contact" ? t.form.message : t.form.anythingElse}
             <textarea
               name="message"
               rows={3}
@@ -157,15 +165,15 @@ export default function CommunityForm({
               required={kind === "contact"}
               placeholder={
                 kind === "membership"
-                  ? "Tell us a little about yourself and your music."
-                  : "What would you like us to know?"
+                  ? t.form.aboutYouPlaceholder
+                  : t.form.otherPlaceholder
               }
             />
           </label>
         )}
         <label className="checkbox-label">
-          <input type="checkbox" required />I agree to the club storing these
-          details to handle my request.
+          <input type="checkbox" required />
+          {t.form.consent}
         </label>
         {error && (
           <p className="form-error" role="alert">
@@ -174,14 +182,8 @@ export default function CommunityForm({
         )}
         <button className="button green" disabled={busy}>
           {busy
-            ? "Sending…"
-            : kind === "registration"
-              ? "Register for event"
-              : kind === "membership"
-                ? "Send application"
-                : kind === "booking"
-                  ? "Request rehearsal slot"
-                  : "Send message"}
+            ? t.form.sending
+            : t.form.submit[kind]}
           <ArrowUpRight size={17} />
         </button>
       </form>

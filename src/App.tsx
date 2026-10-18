@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import useScrollReveal from "@/lib/useScrollReveal";
 import {
   ArrowDown,
@@ -9,6 +16,7 @@ import {
   Guitar,
   Heart,
   Instagram,
+  Languages,
   MapPin,
   Menu,
   Music2,
@@ -35,75 +43,38 @@ import {
   type ClubEvent,
   type Content,
 } from "@/lib/api";
+import { useLang } from "@/lib/i18n";
 
 type Page = "home" | "events" | "journal" | "gallery" | "about" | "admin";
 type Modal =
   | { kind: FormKind; event?: ClubEvent }
   | { kind: "article"; article: Article }
   | { kind: "photo"; index: number };
-const pages: { id: Page; label: string }[] = [
-  { id: "home", label: "Home" },
-  { id: "events", label: "Events" },
-  { id: "journal", label: "Journal" },
-  { id: "gallery", label: "Gallery" },
-  { id: "about", label: "Our story" },
-];
-const gallery = [
-  { image: "run-stage", title: "Run In Rhythm, all together on stage", category: "On stage" },
-  { image: "run-vocal", title: "A voice in the spotlight", category: "On stage" },
-  { image: "run-guitar", title: "Every chord, a little closer", category: "On stage" },
-  { image: "run-duet", title: "Two voices, one stage", category: "On stage" },
-  { image: "run-crowd", title: "The crowd is part of the song", category: "Club life" },
-  { image: "run-family", title: "The Run In Rhythm family", category: "Club life" },
-  {
-    image: "kaset-family",
-    title: "All together, under the lights",
-    category: "On stage",
-  },
-  {
-    image: "hero-vocal",
-    title: "A voice. A moment.",
-    category: "On stage",
-  },
-  {
-    image: "royal-guitar",
-    title: "One chord at a time",
-    category: "On stage",
-  },
-  {
-    image: "kaset-stage",
-    title: "Nights we won’t forget",
-    category: "On stage",
-  },
-  {
-    image: "club-beach",
-    title: "Making music, making memories",
-    category: "Club life",
-  },
-  {
-    image: "clubroom-friends",
-    title: "Right at home in the clubroom",
-    category: "Club life",
-  },
-  {
-    image: "freshy-band",
-    title: "Freshy Day, full of music",
-    category: "On stage",
-  },
-  {
-    image: "freshy-friends",
-    title: "The people behind the performance",
-    category: "Club life",
-  },
-  {
-    image: "clubroom-circle",
-    title: "Our favorite kind of circle",
-    category: "Club life",
-  },
+const pages: Page[] = ["home", "events", "journal", "gallery", "about"];
+const gallery: {
+  image: string;
+  category: "stage" | "life";
+  title: { en: string; th: string };
+}[] = [
+  { image: "run-stage", category: "stage", title: { en: "Run In Rhythm, all together on stage", th: "Run In Rhythm พร้อมหน้ากันบนเวที" } },
+  { image: "run-vocal", category: "stage", title: { en: "A voice in the spotlight", th: "เสียงหนึ่งเสียงกลางแสงสปอตไลต์" } },
+  { image: "run-guitar", category: "stage", title: { en: "Every chord, a little closer", th: "ทุกคอร์ด ใกล้กันขึ้นอีกนิด" } },
+  { image: "run-duet", category: "stage", title: { en: "Two voices, one stage", th: "สองเสียง หนึ่งเวที" } },
+  { image: "run-crowd", category: "life", title: { en: "The crowd is part of the song", th: "ผู้ชมก็เป็นส่วนหนึ่งของบทเพลง" } },
+  { image: "run-family", category: "life", title: { en: "The Run In Rhythm family", th: "ครอบครัว Run In Rhythm" } },
+  { image: "kaset-family", category: "stage", title: { en: "All together, under the lights", th: "พร้อมหน้ากันใต้แสงไฟ" } },
+  { image: "hero-vocal", category: "stage", title: { en: "A voice. A moment.", th: "หนึ่งเสียง หนึ่งช่วงเวลา" } },
+  { image: "royal-guitar", category: "stage", title: { en: "One chord at a time", th: "ทีละคอร์ด" } },
+  { image: "kaset-stage", category: "stage", title: { en: "Nights we won’t forget", th: "ค่ำคืนที่เราไม่มีวันลืม" } },
+  { image: "club-beach", category: "life", title: { en: "Making music, making memories", th: "ทำเพลง สร้างความทรงจำ" } },
+  { image: "clubroom-friends", category: "life", title: { en: "Right at home in the clubroom", th: "อบอุ่นเหมือนบ้านในห้องชมรม" } },
+  { image: "freshy-band", category: "stage", title: { en: "Freshy Day, full of music", th: "Freshy Day เต็มไปด้วยเสียงเพลง" } },
+  { image: "freshy-friends", category: "life", title: { en: "The people behind the performance", th: "ผู้คนเบื้องหลังการแสดง" } },
+  { image: "clubroom-circle", category: "life", title: { en: "Our favorite kind of circle", th: "วงกลมที่เราชอบที่สุด" } },
 ];
 function readPage(): Page {
   const value = window.location.hash.slice(1);
-  return [...pages.map((p) => p.id), "admin"].includes(value)
+  return [...pages, "admin"].includes(value)
     ? (value as Page)
     : "home";
 }
@@ -127,13 +98,14 @@ function EventCard({
   event: ClubEvent;
   onOpen: () => void;
 }) {
+  const { t } = useLang();
   const past = eventEnd(event.date) < Date.now();
   return (
     <article className="event-card">
       <button
         className="event-image"
         onClick={onOpen}
-        aria-label={`View ${event.title}`}
+        aria-label={t.event.view(event.title)}
       >
         {event.image && (
           <img
@@ -143,15 +115,15 @@ function EventCard({
           />
         )}
         <span className="date-sticker">
-          <b>{dateLabel(event.date, { day: "2-digit" })}</b>
-          <span>{dateLabel(event.date, { month: "short" })}</span>
+          <b>{dateLabel(event.date, { day: "2-digit" }, t.locale)}</b>
+          <span>{dateLabel(event.date, { month: "short" }, t.locale)}</span>
         </span>
         <span className="image-tag">{event.category}</span>
       </button>
       <div className="event-info">
         <div className="event-meta">
-          {past ? "PAST EVENT" : "COMING UP"}
-          <span>{event.sample ? "SAMPLE EVENT" : "KU ACOUSTIC"}</span>
+          {past ? t.event.past : t.event.comingUp}
+          <span>{event.sample ? t.event.sample : "KU ACOUSTIC"}</span>
         </div>
         <button className="title-button" onClick={onOpen}>
           <h3>{event.title}</h3>
@@ -163,22 +135,16 @@ function EventCard({
         <div className="event-bottom">
           <span>
             <Clock3 size={14} />
-            {timeKnown(event.date)
-              ? `${new Date(event.date).toLocaleTimeString("en-GB", {
-                  timeZone: "Asia/Bangkok",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })} ICT`
-              : "Time TBA"}
+            {timeKnown(event.date) ? t.time(clock(event.date)) : t.event.timeTba}
           </span>
           <button onClick={onOpen}>
-            {past ? "View recap" : "Event details"}
+            {past ? t.event.viewRecap : t.event.details}
             <ArrowUpRight size={16} />
           </button>
         </div>
         {event.link && (
-          <a className="event-video text-link" href={event.link} target="_blank" rel="noopener noreferrer" aria-label={`Watch video: ${event.title} (opens in a new tab)`}>
-            <Youtube size={17} /> Watch video <ArrowUpRight size={15} />
+          <a className="event-video text-link" href={event.link} target="_blank" rel="noopener noreferrer" aria-label={t.event.watchVideoLabel(event.title)}>
+            <Youtube size={17} /> {t.event.watchVideo} <ArrowUpRight size={15} />
           </a>
         )}
       </div>
@@ -192,12 +158,13 @@ function ArticleCard({
   article: Article;
   onOpen: () => void;
 }) {
+  const { t } = useLang();
   return (
     <article className="article-card">
       <button
         onClick={onOpen}
         className="article-image"
-        aria-label={`Read ${article.title}`}
+        aria-label={t.article.read(article.title)}
       >
         <img
           src={photo(article.image, 750)}
@@ -207,20 +174,21 @@ function ArticleCard({
       </button>
       <div className="article-meta">
         <span>{article.category}</span>
-        <span>{dateLabel(article.date)}</span>
+        <span>{dateLabel(article.date, undefined, t.locale)}</span>
       </div>
       <button className="title-button" onClick={onOpen}>
         <h3>{article.title}</h3>
       </button>
       <p>{article.excerpt}</p>
       <button className="text-link" onClick={onOpen}>
-        Read the story
+        {t.article.readStory}
         <ArrowUpRight size={15} />
       </button>
     </article>
   );
 }
 function Newsletter() {
+  const { t } = useLang();
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
   async function submit(e: FormEvent<HTMLFormElement>) {
@@ -236,10 +204,7 @@ function Newsletter() {
           email: new FormData(form).get("email"),
         }),
       });
-      setStatus(
-        result.message ||
-          "You’re on the list! Your subscription has been saved.",
-      );
+      setStatus(result.message || t.newsletter.subscribed);
       form.reset();
     } catch (err) {
       setStatus((err as Error).message);
@@ -250,14 +215,14 @@ function Newsletter() {
   return (
     <section className="newsletter">
       <div>
-        <span className="eyebrow">A LITTLE MUSIC IN YOUR INBOX</span>
-        <h2>Stay in the loop.</h2>
-        <p>New gigs, club stories, and chances to get involved.</p>
+        <span className="eyebrow">{t.newsletter.eyebrow}</span>
+        <h2>{t.newsletter.title}</h2>
+        <p>{t.newsletter.body}</p>
       </div>
       <form onSubmit={submit}>
         <div className="subscribe-field">
           <label className="sr-only" htmlFor="newsletter-email">
-            Email address
+            {t.newsletter.emailLabel}
           </label>
           <input
             id="newsletter-email"
@@ -265,15 +230,13 @@ function Newsletter() {
             type="email"
             required
             maxLength={254}
-            placeholder="Your email address"
+            placeholder={t.newsletter.emailPlaceholder}
           />
-          <button disabled={busy} aria-label="Subscribe to club updates">
+          <button disabled={busy} aria-label={t.newsletter.subscribe}>
             {busy ? "…" : <ArrowUpRight size={23} />}
           </button>
         </div>
-        <small>
-          By subscribing, you agree to the club storing your email for updates.
-        </small>
+        <small>{t.newsletter.consent}</small>
         <p className="subscribe-status" role="status">
           {status}
         </p>
@@ -283,6 +246,7 @@ function Newsletter() {
 }
 
 export default function App() {
+  const { lang, setLang, t } = useLang();
   const mainRef = useRef<HTMLElement>(null);
   useScrollReveal(mainRef);
   const [marqueePaused, setMarqueePaused] = useState(false);
@@ -294,9 +258,10 @@ export default function App() {
   const [modal, setModal] = useState<Modal | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<ClubEvent | null>(null);
   const [eventTab, setEventTab] = useState("upcoming");
-  const [category, setCategory] = useState("All events");
+  // An empty category means every category.
+  const [category, setCategory] = useState("");
   const [query, setQuery] = useState("");
-  const [galleryFilter, setGalleryFilter] = useState("All moments");
+  const [galleryFilter, setGalleryFilter] = useState<"all" | "stage" | "life">("all");
   const refresh = useCallback(async () => {
     try {
       const data = await api<Content>("/content");
@@ -333,7 +298,7 @@ export default function App() {
     .filter(
       (event) =>
         eventEnd(event.date) >= Date.now() === (eventTab === "upcoming") &&
-        (category === "All events" || event.category === category) &&
+        (!category || event.category === category) &&
         `${event.title} ${event.venue}`
           .toLowerCase()
           .includes(query.toLowerCase()),
@@ -357,40 +322,51 @@ export default function App() {
           document.getElementById("main")?.scrollIntoView();
         }}
       >
-        Skip to content
+        {t.skip}
       </a>
       <header className="site-header">
         <div className="header-inner">
-          <a href="#home" aria-label="KU Acoustic home">
+          <a href="#home" aria-label={t.homeLabel}>
             <Brand />
           </a>
           <nav
-            aria-label="Main navigation"
+            aria-label={t.mainNav}
             className={menu ? "main-nav open" : "main-nav"}
           >
             {pages.map((item) => (
               <a
-                key={item.id}
-                href={`#${item.id}`}
-                className={page === item.id ? "active" : ""}
-                aria-current={page === item.id ? "page" : undefined}
+                key={item}
+                href={`#${item}`}
+                className={page === item ? "active" : ""}
+                aria-current={page === item ? "page" : undefined}
                 onClick={() => setMenu(false)}
               >
-                {item.label}
+                {t.pages[item]}
               </a>
             ))}
           </nav>
-          <button
-            className="button green header-join"
-            onClick={() => setModal({ kind: "membership" })}
-          >
-            Join the club
-            <ArrowUpRight size={16} />
-          </button>
+          <div className="header-actions">
+            <button
+              className="button green header-join"
+              onClick={() => setModal({ kind: "membership" })}
+            >
+              {t.joinClub}
+              <ArrowUpRight size={16} />
+            </button>
+            <button
+              className="lang-toggle"
+              onClick={() => setLang(lang === "en" ? "th" : "en")}
+              aria-label={t.switchLabel}
+              lang={lang === "en" ? "th" : "en"}
+            >
+              <Languages size={15} />
+              {t.switchTo}
+            </button>
+          </div>
           <button
             className="icon-button mobile-toggle"
             onClick={() => setMenu(!menu)}
-            aria-label={menu ? "Close menu" : "Open menu"}
+            aria-label={menu ? t.closeMenu : t.openMenu}
             aria-expanded={menu}
           >
             {menu ? <X /> : <Menu />}
@@ -404,26 +380,17 @@ export default function App() {
               <div className="hero-copy">
                 <span className="eyebrow">
                   <span className="live-dot" />
-                  GOOD MUSIC. GREAT COMPANY.
+                  {t.hero.eyebrow}
                 </span>
-                <h1>
-                  Find your sound.
-                  <br />
-                  Find <em>your people.</em>
-                </h1>
-                <p>
-                  A little acoustic. A little electric. A whole lot of heart.
-                  <br className="desktop-break" /> We’re KU Acoustic — a
-                  community brought together
-                  <br className="desktop-break" /> by the love of making music.
-                </p>
+                <h1>{t.hero.title}</h1>
+                <p>{t.hero.body}</p>
                 <div className="hero-actions">
                   <button className="button green" onClick={() => go("events")}>
-                    Explore our events
+                    {t.hero.explore}
                     <ArrowUpRight size={18} />
                   </button>
                   <button className="button plain" onClick={() => go("about")}>
-                    Get to know us
+                    {t.hero.getToKnow}
                     <ArrowRight size={17} />
                   </button>
                 </div>
@@ -439,39 +406,38 @@ export default function App() {
                     ))}
                   </div>
                   <p>
-                    <b>Different voices. One community.</b>
-                    <span>Making memories since 1989.</span>
+                    <b>{t.hero.members}</b>
+                    <span>{t.hero.since}</span>
                   </p>
                 </div>
               </div>
               <div className="hero-visual">
                 <HeroSlideshow />
-                <span className="photo-corner">LIVE A LITTLE. PLAY A LOT.</span>
+                <span className="photo-corner">{t.hero.photoCorner}</span>
                 <div className="hero-note">
                   <span className="note-icon">
                     <Music2 size={22} />
                   </span>
-                  <span>
-                    More than a music club.
-                    <br />
-                    <b>A place to belong.</b>
-                  </span>
+                  <span>{t.hero.note}</span>
                   <Heart size={18} />
                 </div>
-                <span className="handwritten">it starts with a song ↗</span>
+                <span className="handwritten">{t.hero.handwritten}</span>
               </div>
             </section>
             <div
               className={`marquee${marqueePaused ? " paused" : ""}`}
-              aria-label="Play. Connect. Create. Belong."
+              aria-label={t.marquee.label}
             >
               <div className="marquee-track" aria-hidden="true">
                 {[0, 1].map((group) => (
                   <div className="marquee-group" key={group}>
                     {[0, 1].map((copy) => (
                       <span key={copy}>
-                        PLAY <Sparkles /> CONNECT <Sparkles /> CREATE <Sparkles />{" "}
-                        BELONG <Sparkles />
+                        {t.marquee.words.map((word) => (
+                          <Fragment key={word}>
+                            {word} <Sparkles />{" "}
+                          </Fragment>
+                        ))}
                       </span>
                     ))}
                   </div>
@@ -479,23 +445,21 @@ export default function App() {
               </div>
               <button
                 className="marquee-control"
-                aria-label={marqueePaused ? "Play music banner animation" : "Pause music banner animation"}
+                aria-label={marqueePaused ? t.marquee.playLabel : t.marquee.pauseLabel}
                 aria-pressed={marqueePaused}
                 onClick={() => setMarqueePaused((paused) => !paused)}
               >
-                {marqueePaused ? "Play" : "Pause"}
+                {marqueePaused ? t.marquee.play : t.marquee.pause}
               </button>
             </div>
             <section className="page-section home-events">
               <div className="section-heading">
                 <div>
-                  <span className="eyebrow">MEET US WHERE THE MUSIC IS</span>
-                  <h2>
-                    Good things are <em>coming.</em>
-                  </h2>
+                  <span className="eyebrow">{t.homeEvents.eyebrow}</span>
+                  <h2>{t.homeEvents.title}</h2>
                 </div>
                 <button className="text-link" onClick={() => go("events")}>
-                  All events
+                  {t.homeEvents.all}
                   <ArrowUpRight size={17} />
                 </button>
               </div>
@@ -509,51 +473,38 @@ export default function App() {
                 ))}
               </div>
               {!loading && !error && upcoming.length === 0 && (
-                <p className="empty-state">
-                  The next chapter is still being written. Join our mailing list
-                  for new events.
-                </p>
+                <p className="empty-state">{t.homeEvents.empty}</p>
               )}
             </section>
             <section className="belong-section">
               <div className="belong-photo">
                 <img
                   src={photo("club-beach", 1100)}
-                  alt="KU Acoustic members together on a club beach trip"
+                  alt={t.belong.photoAlt}
                   loading="lazy"
                 />
-                <span className="photo-caption">
-                  A SHARED PASSION. A THOUSAND MEMORIES.
-                </span>
+                <span className="photo-caption">{t.belong.caption}</span>
               </div>
               <div className="belong-copy">
-                <span className="eyebrow">MORE THAN THE NOTES</span>
-                <h2>
-                  Come for the music.
-                  <br />
-                  Stay for <em>the people.</em>
-                </h2>
-                <p>
-                  From your first chord to your first encore, you don’t have to
-                  do it alone. We’re a home for curious beginners, seasoned
-                  performers, and everyone who just loves a good song.
-                </p>
+                <span className="eyebrow">{t.belong.eyebrow}</span>
+                <h2>{t.belong.title}</h2>
+                <p>{t.belong.body}</p>
                 <div className="belong-values">
                   <span>
                     <Guitar size={19} />
-                    All sounds welcome
+                    {t.belong.values[0]}
                   </span>
                   <span>
                     <Users size={19} />
-                    Every faculty, one family
+                    {t.belong.values[1]}
                   </span>
                   <span>
                     <Heart size={19} />
-                    Passion over perfection
+                    {t.belong.values[2]}
                   </span>
                 </div>
                 <button className="text-link" onClick={() => go("about")}>
-                  This is our story
+                  {t.belong.story}
                   <ArrowUpRight size={17} />
                 </button>
               </div>
@@ -561,13 +512,11 @@ export default function App() {
             <section className="page-section">
               <div className="section-heading">
                 <div>
-                  <span className="eyebrow">NOTES FROM THE CLUB</span>
-                  <h2>
-                    A little behind <em>the scenes.</em>
-                  </h2>
+                  <span className="eyebrow">{t.homeJournal.eyebrow}</span>
+                  <h2>{t.homeJournal.title}</h2>
                 </div>
                 <button className="text-link" onClick={() => go("journal")}>
-                  The journal
+                  {t.homeJournal.link}
                   <ArrowUpRight size={17} />
                 </button>
               </div>
@@ -586,19 +535,15 @@ export default function App() {
                 <Guitar size={74} strokeWidth={1} />
               </span>
               <div>
-                <span className="eyebrow">YOUR NEXT CHAPTER SOUNDS GOOD</span>
-                <h2>
-                  There’s a place for <em>you</em> here.
-                </h2>
-                <p>
-                  Bring your talent. Bring your curiosity. Just bring yourself.
-                </p>
+                <span className="eyebrow">{t.joinBanner.eyebrow}</span>
+                <h2>{t.joinBanner.title}</h2>
+                <p>{t.joinBanner.body}</p>
               </div>
               <button
                 className="button cream"
                 onClick={() => setModal({ kind: "membership" })}
               >
-                Find your people
+                {t.joinBanner.cta}
                 <ArrowUpRight size={18} />
               </button>
             </section>
@@ -608,13 +553,9 @@ export default function App() {
         {page === "events" && (
           <section className="page-section full-page">
             <div className="page-title">
-              <span className="eyebrow">LET’S MAKE SOME MEMORIES</span>
-              <h1>
-                Meet us at <em>the next gig.</em>
-              </h1>
-              <p>
-                Live sets, open mics, and a little room to try something new.
-              </p>
+              <span className="eyebrow">{t.eventsPage.eyebrow}</span>
+              <h1>{t.eventsPage.title}</h1>
+              <p>{t.eventsPage.body}</p>
             </div>
             <div className="event-toolbar">
               <div className="tabs">
@@ -622,13 +563,13 @@ export default function App() {
                   className={eventTab === "upcoming" ? "active" : ""}
                   onClick={() => setEventTab("upcoming")}
                 >
-                  Coming up <span>{upcoming.length}</span>
+                  {t.eventsPage.comingUp} <span>{upcoming.length}</span>
                 </button>
                 <button
                   className={eventTab === "past" ? "active" : ""}
                   onClick={() => setEventTab("past")}
                 >
-                  Past events
+                  {t.eventsPage.past}
                 </button>
               </div>
               <label className="search">
@@ -636,14 +577,14 @@ export default function App() {
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search events…"
-                  aria-label="Search events"
+                  placeholder={t.eventsPage.searchPlaceholder}
+                  aria-label={t.eventsPage.searchLabel}
                 />
               </label>
             </div>
             <div className="filters">
               {[
-                "All events",
+                "",
                 ...new Set(content.events.map((event) => event.category)),
               ].map((item) => (
                 <button
@@ -651,7 +592,7 @@ export default function App() {
                   className={category === item ? "active" : ""}
                   onClick={() => setCategory(item)}
                 >
-                  {item}
+                  {item || t.homeEvents.all}
                 </button>
               ))}
             </div>
@@ -665,21 +606,19 @@ export default function App() {
               ))}
             </div>
             {!loading && !error && shownEvents.length === 0 && (
-              <p className="empty-state">
-                No events match these filters. Try another category or search.
-              </p>
+              <p className="empty-state">{t.eventsPage.empty}</p>
             )}
             <div className="small-callout">
               <CalendarDays size={26} />
               <div>
-                <h3>Make room for your next rehearsal.</h3>
-                <p>Club members can request a practice slot, right here.</p>
+                <h3>{t.eventsPage.calloutTitle}</h3>
+                <p>{t.eventsPage.calloutBody}</p>
               </div>
               <button
                 className="button outline"
                 onClick={() => setModal({ kind: "booking" })}
               >
-                Book a rehearsal
+                {t.eventsPage.book}
                 <ArrowUpRight size={16} />
               </button>
             </div>
@@ -688,11 +627,9 @@ export default function App() {
         {page === "journal" && (
           <section className="page-section full-page">
             <div className="page-title">
-              <span className="eyebrow">NOTES FROM THE CLUB</span>
-              <h1>
-                Stories worth <em>sharing.</em>
-              </h1>
-              <p>The people, the practice, and everything between the songs.</p>
+              <span className="eyebrow">{t.journalPage.eyebrow}</span>
+              <h1>{t.journalPage.title}</h1>
+              <p>{t.journalPage.body}</p>
             </div>
             <div className="card-grid">
               {sortedNews.map((article) => (
@@ -704,51 +641,46 @@ export default function App() {
               ))}
             </div>
             {!loading && !error && !sortedNews.length && (
-              <p className="empty-state">New stories are on their way.</p>
+              <p className="empty-state">{t.journalPage.empty}</p>
             )}
           </section>
         )}
         {page === "gallery" && (
           <section className="page-section full-page">
             <div className="page-title">
-              <span className="eyebrow">A FEW OF OUR FAVORITE MOMENTS</span>
-              <h1>
-                Looks like <em>good memories.</em>
-              </h1>
-              <p>Our music, our stage, and the moments we share in between.</p>
-              <small className="muted">
-              Photos from Run In Rhythm, Kaset Fair, Royal Project, Freshy Day/Freshy Night,
-                and life at KU Acoustic.
-              </small>
+              <span className="eyebrow">{t.galleryPage.eyebrow}</span>
+              <h1>{t.galleryPage.title}</h1>
+              <p>{t.galleryPage.body}</p>
+              <small className="muted">{t.galleryPage.note}</small>
             </div>
             <div className="filters">
-              {["All moments", "On stage", "Club life"].map((item) => (
+              {(["all", "stage", "life"] as const).map((item) => (
                 <button
                   key={item}
                   className={galleryFilter === item ? "active" : ""}
                   onClick={() => setGalleryFilter(item)}
                 >
-                  {item}
+                  {t.galleryPage.filters[item]}
                 </button>
               ))}
             </div>
             <div className="gallery-grid">
               {gallery.map(
                 (item, index) =>
-                  (galleryFilter === "All moments" ||
+                  (galleryFilter === "all" ||
                     galleryFilter === item.category) && (
                     <button
-                      key={item.title}
+                      key={item.image}
                       onClick={() => setModal({ kind: "photo", index })}
                     >
                       <img
                         src={photo(item.image)}
-                        alt={item.title}
+                        alt={item.title[lang]}
                         loading="lazy"
                       />
                       <span>
-                        <small>{item.category}</small>
-                        <b>{item.title}</b>
+                        <small>{t.galleryPage.filters[item.category]}</small>
+                        <b>{item.title[lang]}</b>
                         <ArrowUpRight size={21} />
                       </span>
                     </button>
@@ -761,111 +693,66 @@ export default function App() {
           <>
             <section className="page-section full-page">
               <div className="page-title">
-                <span className="eyebrow">
-                  KASETSART UNIVERSITY · SINCE 1989
-                </span>
-                <h1>
-                  Different voices.
-                  <br />
-                  <em>One shared love.</em>
-                </h1>
-                <p>Music brought us here. The people made us stay.</p>
+                <span className="eyebrow">{t.about.eyebrow}</span>
+                <h1>{t.about.title}</h1>
+                <p>{t.about.body}</p>
               </div>
               <div className="about-grid">
                 <img
                   src={photo("run-family", 1100)}
-                  alt="KU Acoustic performers and audience together at Run In Rhythm Concert"
+                  alt={t.about.photoAlt}
                 />
                 <div>
-                  <h2>
-                    A little club.
-                    <br />A whole lot of heart.
-                  </h2>
-                  <p>
-                    KU Acoustic is Kasetsart University’s community for anyone
-                    who loves to play, sing, create, and listen. Since 1989,
-                    we’ve been turning campus afternoons into rehearsals and
-                    strangers into bandmates.
-                  </p>
-                  <p>
-                    You don’t need a perfect voice, a fancy guitar, or a
-                    particular faculty on your student card. Bring your
-                    curiosity and a love of music. We’ll meet you there.
-                  </p>
+                  <h2>{t.about.heading}</h2>
+                  <p>{t.about.p1}</p>
+                  <p>{t.about.p2}</p>
                   <button
                     className="button green"
                     onClick={() => setModal({ kind: "membership" })}
                   >
-                    Be part of the story
+                    {t.about.cta}
                     <ArrowUpRight size={17} />
                   </button>
                 </div>
               </div>
               <div className="about-stats">
-                <div>
-                  <strong>1989</strong>
-                  <span>Where our story began</span>
-                </div>
-                <div>
-                  <strong>40+</strong>
-                  <span>Active club members</span>
-                </div>
-                <div>
-                  <strong>4–6</strong>
-                  <span>Shows every year</span>
-                </div>
-                <div>
-                  <strong>∞</strong>
-                  <span>Reasons to make music</span>
-                </div>
+                {t.about.stats.map(([value, label]) => (
+                  <div key={label}>
+                    <strong>{value}</strong>
+                    <span>{label}</span>
+                  </div>
+                ))}
               </div>
               <div className="about-details">
                 <div>
-                  <span className="eyebrow">DROP BY. SAY HELLO.</span>
-                  <h2>Your next favorite place.</h2>
+                  <span className="eyebrow">{t.about.visitEyebrow}</span>
+                  <h2>{t.about.visitTitle}</h2>
                   <p>
                     <MapPin size={18} />
-                    Kasetsart University, Bangkhen, Bangkok
+                    {t.about.address}
                   </p>
                   <p>
                     <Clock3 size={18} />
-                    Mon–Fri 16:00–21:00 · Sat–Sun 13:00–18:00
+                    {t.about.hours}
                   </p>
                   <button
                     className="text-link"
                     onClick={() => setModal({ kind: "booking" })}
                   >
-                    Request a rehearsal slot
+                    {t.about.requestSlot}
                     <ArrowUpRight size={17} />
                   </button>
                   <button
                     className="text-link"
                     onClick={() => setModal({ kind: "contact" })}
                   >
-                    Contact the committee
+                    {t.about.contact}
                     <ArrowUpRight size={17} />
                   </button>
                 </div>
                 <div className="faq">
-                  <h2>A few things to know.</h2>
-                  {[
-                    [
-                      "Do I need musical experience?",
-                      "No. Beginners, experienced musicians, and people who enjoy listening are all welcome. Tell us what you’re interested in through the application form.",
-                    ],
-                    [
-                      "Can students from any faculty join?",
-                      "Yes! KU Acoustic welcomes Kasetsart students from every faculty, including creative and production roles beyond performing.",
-                    ],
-                    [
-                      "How do I join?",
-                      "Submit a membership application here. Our committee will follow up with the next recruitment or audition details. Submitting an application does not automatically confirm membership.",
-                    ],
-                    [
-                      "How do rehearsal bookings work?",
-                      "Select a future date and a time during club hours. Your request reserves the slot while the committee reviews it; access is confirmed after approval.",
-                    ],
-                  ].map(([question, answer]) => (
+                  <h2>{t.about.faqTitle}</h2>
+                  {t.about.faq.map(([question, answer]) => (
                     <details key={question}>
                       <summary>
                         {question}
@@ -884,15 +771,12 @@ export default function App() {
         {loading &&
           (page === "home" || page === "events" || page === "journal") && (
             <p className="loading-state" role="status">
-              Tuning things up… Loading club content.
+              {t.loading}
             </p>
           )}
         {error && (
           <div className="backend-error" role="alert">
-            <p>
-              The club content could not be loaded. Make sure the backend is
-              running.
-            </p>
+            <p>{t.loadError}</p>
             <button
               className="text-link"
               onClick={() => {
@@ -900,7 +784,7 @@ export default function App() {
                 refresh();
               }}
             >
-              Try again
+              {t.tryAgain}
               <ArrowRight size={16} />
             </button>
           </div>
@@ -912,10 +796,7 @@ export default function App() {
             <a href="#home">
               <Brand light />
             </a>
-            <p>
-              Good music. Great company.
-              <br />A place to belong.
-            </p>
+            <p>{t.footer.tagline}</p>
             <div className="socials">
               <a
                 href="https://www.instagram.com/kuacoustic_official/"
@@ -944,55 +825,48 @@ export default function App() {
             </div>
           </div>
           <div className="footer-links">
-            <span>TAKE A LOOK AROUND</span>
+            <span>{t.footer.explore}</span>
             {pages.slice(1).map((item) => (
-              <a href={`#${item.id}`} key={item.id}>
-                {item.label}
+              <a href={`#${item}`} key={item}>
+                {t.pages[item]}
               </a>
             ))}
           </div>
           <div className="footer-links">
-            <span>GET INVOLVED</span>
+            <span>{t.footer.involved}</span>
             <button onClick={() => setModal({ kind: "membership" })}>
-              Join the club
+              {t.joinClub}
             </button>
             <button onClick={() => setModal({ kind: "booking" })}>
-              Book a rehearsal
+              {t.eventsPage.book}
             </button>
             <button onClick={() => setModal({ kind: "contact" })}>
-              Collaborate with us
+              {t.footer.collaborate}
             </button>
           </div>
           <div className="footer-location">
-            <span>FIND YOUR PEOPLE HERE</span>
-            <p>
-              Kasetsart University
-              <br />
-              Bangkhen, Bangkok, Thailand
-            </p>
+            <span>{t.footer.find}</span>
+            <p>{t.footer.address}</p>
             <a
               href="https://www.google.com/maps/search/?api=1&query=Kasetsart+University+Bangkhen"
               target="_blank"
               rel="noreferrer"
             >
-              Find us on the map
+              {t.footer.map}
               <ArrowUpRight size={15} />
             </a>
           </div>
         </div>
         <div className="footer-bottom">
-          <span>
-            © {new Date().getFullYear()} KU Acoustic. Made with a little rhythm
-            & a lot of heart.
-          </span>
+          <span>{t.footer.copyright(new Date().getFullYear())}</span>
           <a href="#admin">
-            Club admin
+            {t.footer.admin}
             <ArrowUpRight size={13} />
           </a>
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           >
-            Back to top
+            {t.footer.backToTop}
             <ArrowDown size={13} className="up-arrow" />
           </button>
         </div>
@@ -1013,14 +887,10 @@ export default function App() {
           <div className="event-detail-meta">
             <p>
               <CalendarDays size={17} />
-              {dateLabel(selectedEvent.date)}
+              {dateLabel(selectedEvent.date, undefined, t.locale)}
               {timeKnown(selectedEvent.date)
-                ? ` · ${new Date(selectedEvent.date).toLocaleTimeString("en-GB", {
-                    timeZone: "Asia/Bangkok",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })} ICT`
-                : " · Start time to be announced"}
+                ? ` · ${t.time(clock(selectedEvent.date))}`
+                : t.event.startTba}
             </p>
             <p>
               <MapPin size={17} />
@@ -1029,20 +899,16 @@ export default function App() {
           </div>
           <p>{selectedEvent.description}</p>
           {selectedEvent.sample && (
-            <p className="sample-note">
-              Sample event for demonstrating the new website. This date and
-              venue have not been confirmed by the club.
-            </p>
+            <p className="sample-note">{t.event.sampleNote}</p>
           )}
           {eventEnd(selectedEvent.date) >= Date.now() ? (
             <>
               <p className="muted">
-                Free admission
+                {t.event.free}
                 {selectedEvent.capacity != null &&
-                  ` · ${Math.max(
-                    0,
-                    selectedEvent.capacity - selectedEvent.registered,
-                  )} places available`}
+                  t.event.places(
+                    Math.max(0, selectedEvent.capacity - selectedEvent.registered),
+                  )}
               </p>
               <div className="dialog-actions">
                 <button
@@ -1056,22 +922,20 @@ export default function App() {
                     setSelectedEvent(null);
                   }}
                 >
-                  Save me a spot
+                  {t.event.saveSpot}
                   <ArrowUpRight size={17} />
                 </button>
                 <button
                   className="button outline"
                   onClick={() => downloadCalendar(selectedEvent)}
                 >
-                  Add to calendar
+                  {t.event.addCalendar}
                   <CalendarDays size={16} />
                 </button>
               </div>
             </>
           ) : !selectedEvent.link ? (
-            <p className="muted">
-              This event has ended. Explore the gallery for more moments.
-            </p>
+            <p className="muted">{t.event.ended}</p>
           ) : null}
           {selectedEvent.link && (
             <a
@@ -1080,7 +944,7 @@ export default function App() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              Watch video
+              {t.event.watchVideo}
               <Youtube size={18} />
             </a>
           )}
@@ -1092,14 +956,8 @@ export default function App() {
             modal.kind === "article"
               ? modal.article.title
               : modal.kind === "photo"
-                ? gallery[modal.index].title
-                : modal.kind === "membership"
-                  ? "Find your people."
-                  : modal.kind === "booking"
-                    ? "A little room to rehearse."
-                    : modal.kind === "contact"
-                      ? "Let’s make something happen."
-                      : "See you at the show."
+                ? gallery[modal.index].title[lang]
+                : t.modalTitles[modal.kind]
           }
           onClose={() => setModal(null)}
           wide={modal.kind === "photo"}
@@ -1113,7 +971,7 @@ export default function App() {
               />
               <div className="article-meta">
                 <span>{modal.article.category}</span>
-                <span>{dateLabel(modal.article.date)}</span>
+                <span>{dateLabel(modal.article.date, undefined, t.locale)}</span>
               </div>
               <p className="article-body">{modal.article.body}</p>
             </>
@@ -1122,7 +980,7 @@ export default function App() {
               <img
                 className="lightbox-photo"
                 src={photo(gallery[modal.index].image, 1600)}
-                alt={gallery[modal.index].title}
+                alt={gallery[modal.index].title[lang]}
               />
               <div className="lightbox-controls">
                 <button
@@ -1135,7 +993,7 @@ export default function App() {
                     })
                   }
                 >
-                  Previous
+                  {t.galleryPage.previous}
                 </button>
                 <span>
                   {modal.index + 1} / {gallery.length}
@@ -1149,7 +1007,7 @@ export default function App() {
                     })
                   }
                 >
-                  Next
+                  {t.galleryPage.next}
                 </button>
               </div>
             </>
@@ -1165,6 +1023,14 @@ export default function App() {
       )}
     </>
   );
+}
+/** Bangkok wall-clock time, e.g. "19:00". */
+function clock(date: string) {
+  return new Date(date).toLocaleTimeString("en-GB", {
+    timeZone: "Asia/Bangkok",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 function downloadCalendar(event: ClubEvent) {
   const clean = (value: string) =>
