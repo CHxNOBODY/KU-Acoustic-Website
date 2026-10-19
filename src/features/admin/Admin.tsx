@@ -433,31 +433,38 @@ export default function Admin({
               <h3 className="content-group">{type}</h3>
               {content[type].map((item) => (
                 <div className="content-item" key={item.id}>
-                  <span>{item.title}</span>
-                  <button
-                    className="icon-button"
-                    aria-label={`Edit ${item.title}`}
-                    onClick={() => {
-                      setEditing(item);
-                      setKind(type);
-                      setNotice("");
-                      document
-                        .getElementById("content-editor")
-                        ?.scrollIntoView({
-                          behavior: "smooth",
-                          block: "center",
-                        });
-                    }}
-                  >
-                    <Pencil size={17} />
-                  </button>
-                  <button
-                    className="icon-button"
-                    aria-label={`Delete ${item.title}`}
-                    onClick={() => remove(type, item.id)}
-                  >
-                    <Trash2 size={17} />
-                  </button>
+                  <div className="content-text">
+                    <b>{item.title}</b>
+                    <small>
+                      {dateLabel(item.date)} · {item.category}
+                    </small>
+                  </div>
+                  <div className="content-actions">
+                    <button
+                      className="icon-button"
+                      aria-label={`Edit ${item.title}`}
+                      onClick={() => {
+                        setEditing(item);
+                        setKind(type);
+                        setNotice("");
+                        document
+                          .getElementById("content-editor")
+                          ?.scrollIntoView({
+                            behavior: "smooth",
+                            block: "center",
+                          });
+                      }}
+                    >
+                      <Pencil size={17} />
+                    </button>
+                    <button
+                      className="icon-button"
+                      aria-label={`Delete ${item.title}`}
+                      onClick={() => remove(type, item.id)}
+                    >
+                      <Trash2 size={17} />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
