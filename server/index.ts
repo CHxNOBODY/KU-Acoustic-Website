@@ -158,6 +158,80 @@ export function createClubServer({
     }
     markDone("truck-photo-v1");
   }
+  // Two older concert recordings join the archive. INSERT OR IGNORE keeps
+  // any committee edits if the rows already exist.
+  if (!done("archive-v2")) {
+    for (const item of archive.filter((event) =>
+      ["when-and-where", "minimal-concert"].includes(event.id),
+    ))
+      db.prepare("INSERT OR IGNORE INTO content VALUES(?,?,?)").run(
+        "events",
+        item.id,
+        JSON.stringify(item),
+      );
+    markDone("archive-v2");
+  }
+  // These concerts were first added with a borrowed stock photo.
+  if (!done("archive-photos-v2")) {
+    for (const id of ["wave-of-vibes", "when-and-where", "minimal-concert"]) {
+      const event = readEvent(id);
+      if (event?.image !== "kaset-stage") continue;
+      delete event.image;
+      save("events", event);
+    }
+    markDone("archive-photos-v2");
+  }
+  // The Club Exhibition now has its own photograph, cropped to the people on
+  // stage; replace only the borrowed or uncropped cover so a committee choice
+  // is kept.
+  if (!done("exhibition-photo-v2")) {
+    const event = readEvent("open-world");
+    if (event?.image === "kaset-stage" || event?.image === "exhibition-crowd") {
+      event.image = "exhibition-cover";
+      save("events", event);
+    }
+    markDone("exhibition-photo-v2");
+  }
+  // Journal articles gain a Thai version. Only add it where none exists, so
+  // an article the committee has already given Thai text keeps it.
+  if (!done("news-thai-v1")) {
+    for (const seeded of news) {
+      const row = db
+        .prepare("SELECT data FROM content WHERE kind='news' AND id=?")
+        .get(seeded.id);
+      if (!row) continue;
+      const item = JSON.parse(row.data as string) as ContentItem;
+      if (item.th || !seeded.th) continue;
+      item.th = seeded.th;
+      save("news", item);
+    }
+    markDone("news-thai-v1");
+  }
+  // The club's own Thai wording: "ฝ่ายเทค" for the tech crew and
+  // "ส่งใบ audition" for applying. Only these phrases are replaced.
+  if (!done("news-thai-wording-v1")) {
+    for (const item of list("news")) {
+      const th = item.th as Record<string, string> | undefined;
+      if (!th?.body) continue;
+      const body = th.body
+        .replaceAll("ช่างเทคนิค", "ฝ่ายเทค")
+        .replaceAll("ส่งใบสมัครสมาชิก", "ส่งใบ audition ");
+      if (body === th.body) continue;
+      item.th = { ...th, body };
+      save("news", item);
+    }
+    markDone("news-thai-wording-v1");
+  }
+  // Run In Rhythm featured both the full band and acoustic sets. Only the
+  // original label is replaced, so a committee choice is kept.
+  if (!done("run-category-v1")) {
+    const event = readEvent("run-in-rhythm");
+    if (event?.category === "Live music") {
+      event.category = "Full band and Acoustic";
+      save("events", event);
+    }
+    markDone("run-category-v1");
+  }
   // node:sqlite answers synchronously; the shared handler simply awaits the
   // plain values it gets back.
   const database: Database = {

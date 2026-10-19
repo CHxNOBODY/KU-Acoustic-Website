@@ -37,6 +37,7 @@ import {
   dateLabel,
   eventEnd,
   eventStart,
+  localizeArticle,
   photo,
   timeKnown,
   type Article,
@@ -71,6 +72,16 @@ const gallery: {
   { image: "freshy-band", category: "stage", title: { en: "Freshy Day, full of music", th: "Freshy Day เต็มไปด้วยเสียงเพลง" } },
   { image: "freshy-friends", category: "life", title: { en: "The people behind the performance", th: "ผู้คนเบื้องหลังการแสดง" } },
   { image: "clubroom-circle", category: "life", title: { en: "Our favorite kind of circle", th: "วงกลมที่เราชอบที่สุด" } },
+  { image: "exhibition-crowd", category: "life", title: { en: "Club Exhibition, a full house", th: "งานเปิดโลกกิจกรรม เต็มทั้งฮอลล์" } },
+  { image: "exhibition-vocal", category: "stage", title: { en: "A song under the starlight", th: "บทเพลงใต้แสงดาว" } },
+  { image: "exhibition-keys", category: "stage", title: { en: "Keys in the glow", th: "คีย์บอร์ดกลางแสงไฟ" } },
+  { image: "exhibition-sax", category: "stage", title: { en: "Voice and saxophone", th: "เสียงร้องกับแซกโซโฟน" } },
+  { image: "exhibition-backstage", category: "life", title: { en: "Good vibes backstage", th: "พลังดี ๆ หลังเวที" } },
+  { image: "exhibition-guitar", category: "stage", title: { en: "Strumming in the blue light", th: "ตีคอร์ดใต้แสงสีฟ้า" } },
+  { image: "exhibition-spotlight", category: "stage", title: { en: "Standing in the moment", th: "ยืนอยู่ในช่วงเวลานั้น" } },
+  { image: "exhibition-hearts", category: "life", title: { en: "Made with love", th: "ทำด้วยหัวใจ" } },
+  { image: "exhibition-haze", category: "stage", title: { en: "Out of the haze", th: "ก้าวออกมาจากม่านควัน" } },
+  { image: "exhibition-family", category: "life", title: { en: "The Club Exhibition crew", th: "ทีมงานเปิดโลกกิจกรรม" } },
 ];
 function readPage(): Page {
   const value = window.location.hash.slice(1);
@@ -100,26 +111,36 @@ function EventCard({
 }) {
   const { t } = useLang();
   const past = eventEnd(event.date) < Date.now();
+  const badges = (
+    <>
+      <span className="date-sticker">
+        <b>{dateLabel(event.date, { day: "2-digit" }, t.locale)}</b>
+        <span>{dateLabel(event.date, { month: "short" }, t.locale)}</span>
+      </span>
+      <span className="image-tag">{event.category}</span>
+    </>
+  );
+  // Upcoming events never show a photo frame, and neither does an event
+  // without a photo; the date and category then sit above the details.
+  const framed = past && event.image;
   return (
-    <article className="event-card">
-      <button
-        className="event-image"
-        onClick={onOpen}
-        aria-label={t.event.view(event.title)}
-      >
-        {event.image && (
+    <article className={`event-card${framed ? "" : " compact"}`}>
+      {framed ? (
+        <button
+          className="event-image"
+          onClick={onOpen}
+          aria-label={t.event.view(event.title)}
+        >
           <img
-            src={photo(event.image, 750)}
+            src={photo(event.image!, 750)}
             alt={`${event.category}: ${event.title}`}
             loading="lazy"
           />
-        )}
-        <span className="date-sticker">
-          <b>{dateLabel(event.date, { day: "2-digit" }, t.locale)}</b>
-          <span>{dateLabel(event.date, { month: "short" }, t.locale)}</span>
-        </span>
-        <span className="image-tag">{event.category}</span>
-      </button>
+          {badges}
+        </button>
+      ) : (
+        <div className="event-head">{badges}</div>
+      )}
       <div className="event-info">
         <div className="event-meta">
           {past ? t.event.past : t.event.comingUp}
@@ -152,13 +173,14 @@ function EventCard({
   );
 }
 function ArticleCard({
-  article,
+  article: original,
   onOpen,
 }: {
   article: Article;
   onOpen: () => void;
 }) {
-  const { t } = useLang();
+  const { lang, t } = useLang();
+  const article = localizeArticle(original, lang);
   return (
     <article className="article-card">
       <button
@@ -185,6 +207,23 @@ function ArticleCard({
         <ArrowUpRight size={15} />
       </button>
     </article>
+  );
+}
+function ArticleBody({ article }: { article: Article }) {
+  const { t } = useLang();
+  return (
+    <>
+      <img
+        className="dialog-cover"
+        src={photo(article.image)}
+        alt={article.title}
+      />
+      <div className="article-meta">
+        <span>{article.category}</span>
+        <span>{dateLabel(article.date, undefined, t.locale)}</span>
+      </div>
+      <p className="article-body">{article.body}</p>
+    </>
   );
 }
 function Newsletter() {
@@ -848,7 +887,7 @@ export default function App() {
             <span>{t.footer.find}</span>
             <p>{t.footer.address}</p>
             <a
-              href="https://www.google.com/maps/search/?api=1&query=Kasetsart+University+Bangkhen"
+              href="https://maps.app.goo.gl/ZZ6CRGBpMoUELmDs5"
               target="_blank"
               rel="noreferrer"
             >
@@ -954,7 +993,7 @@ export default function App() {
         <Dialog
           title={
             modal.kind === "article"
-              ? modal.article.title
+              ? localizeArticle(modal.article, lang).title
               : modal.kind === "photo"
                 ? gallery[modal.index].title[lang]
                 : t.modalTitles[modal.kind]
@@ -963,18 +1002,7 @@ export default function App() {
           wide={modal.kind === "photo"}
         >
           {modal.kind === "article" ? (
-            <>
-              <img
-                className="dialog-cover"
-                src={photo(modal.article.image)}
-                alt={modal.article.title}
-              />
-              <div className="article-meta">
-                <span>{modal.article.category}</span>
-                <span>{dateLabel(modal.article.date, undefined, t.locale)}</span>
-              </div>
-              <p className="article-body">{modal.article.body}</p>
-            </>
+            <ArticleBody article={localizeArticle(modal.article, lang)} />
           ) : modal.kind === "photo" ? (
             <>
               <img

@@ -1,7 +1,18 @@
 import { useState, type FormEvent } from "react";
-import { ArrowUpRight, CheckCircle2 } from "lucide-react";
+import {
+  ArrowUpRight,
+  AudioLines,
+  CheckCircle2,
+  Drum,
+  Guitar,
+  Mic,
+  Piano,
+  SlidersHorizontal,
+  type LucideIcon,
+} from "lucide-react";
 import { api, type ClubEvent } from "@/lib/api";
 import { useLang } from "@/lib/i18n";
+import DatePicker from "./DatePicker";
 export type FormKind = "membership" | "registration" | "booking" | "contact";
 // Submitted values stay in English so the admin view reads the same either way.
 const roles = [
@@ -10,9 +21,16 @@ const roles = [
   "Bass",
   "Keyboard",
   "Drums & percussion",
-  "Sound & production",
-  "Photography & creative",
-  "Music lover",
+  "Technician",
+];
+// One icon per role, in the same order as roles.
+const roleIcons: LucideIcon[] = [
+  Mic,
+  Guitar,
+  AudioLines,
+  Piano,
+  Drum,
+  SlidersHorizontal,
 ];
 export default function CommunityForm({
   kind,
@@ -27,8 +45,14 @@ export default function CommunityForm({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [date, setDate] = useState("");
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    // The custom date picker has no native "required" check.
+    if (kind === "booking" && !date) {
+      setError(t.form.dateRequired);
+      return;
+    }
     setBusy(true);
     setError("");
     const values = Object.fromEntries(new FormData(e.currentTarget));
@@ -105,54 +129,78 @@ export default function CommunityForm({
                 placeholder={t.form.facultyPlaceholder}
               />
             </label>
-            <label>
-              {t.form.interested}
-              <select name="role" required>
-                <option value="">{t.form.chooseRole}</option>
-                {roles.map((role, i) => (
-                  <option key={role} value={role}>
-                    {t.form.roles[i]}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <fieldset className="time-picker">
+              <legend>{t.form.interested}</legend>
+              <div className="time-options roles">
+                {roles.map((role, i) => {
+                  const Icon = roleIcons[i];
+                  return (
+                    <label key={role}>
+                      <input type="radio" name="role" value={role} required />
+                      <span>
+                        <Icon size={16} />
+                        {t.form.roles[i]}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </fieldset>
           </>
         )}
         {kind === "booking" && (
           <>
-            <label>
-              {t.form.date}
-              <input
+            <div className="field">
+              <span className="field-label">{t.form.date}</span>
+              <DatePicker
                 name="date"
-                type="date"
-                required
+                value={date}
+                onChange={(value) => {
+                  setDate(value);
+                  setError("");
+                }}
                 min={new Intl.DateTimeFormat("en-CA", {
                   timeZone: "Asia/Bangkok",
                 }).format(new Date())}
               />
-            </label>
-            <div className="form-row">
-              <label>
-                {t.form.startTime}
-                <select name="time" required>
-                  {Array.from({ length: 8 }, (_, i) => `${i + 13}:00`).map(
-                    (time) => (
-                      <option key={time}>{time}</option>
-                    ),
-                  )}
-                </select>
-              </label>
-              <label>
-                {t.form.duration}
-                <select name="duration">
-                  {[1, 2, 3].map((hours) => (
-                    <option key={hours} value={hours}>
-                      {t.form.hours(hours)}
-                    </option>
-                  ))}
-                </select>
-              </label>
             </div>
+            {/* Time and duration chips instead of native selects, whose open
+                list the browser draws and CSS cannot style. */}
+            <fieldset className="time-picker">
+              <legend>{t.form.startTime}</legend>
+              <div className="time-options">
+                {Array.from({ length: 8 }, (_, i) => `${i + 13}:00`).map(
+                  (time, i) => (
+                    <label key={time}>
+                      <input
+                        type="radio"
+                        name="time"
+                        value={time}
+                        required
+                        defaultChecked={i === 0}
+                      />
+                      <span>{time}</span>
+                    </label>
+                  ),
+                )}
+              </div>
+            </fieldset>
+            <fieldset className="time-picker">
+              <legend>{t.form.duration}</legend>
+              <div className="time-options three">
+                {[1, 2, 3].map((hours) => (
+                  <label key={hours}>
+                    <input
+                      type="radio"
+                      name="duration"
+                      value={hours}
+                      defaultChecked={hours === 1}
+                    />
+                    <span>{t.form.hours(hours)}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
           </>
         )}
         {kind !== "registration" && (

@@ -444,6 +444,9 @@ html[lang="th"] .handwritten {
 .hero-slide-controls :focus-visible { outline-color: var(--paper); outline-offset: 1px; }
 .hero-slide-dots { display: flex; }
 .hero-slide-dots button { width: 22px; }
+@media (max-width: 760px) {
+  .hero-slide-dots button { width: 15px; }
+}
 .hero-slide-dots span {
   width: 5px;
   height: 5px;
@@ -568,6 +571,11 @@ html[lang="th"] .handwritten {
   padding-top: 13px;
   width: 100%;
 }
+/* Without a photo, keep the card short rather than stretching to a framed
+   neighbour's height. */
+.event-card.compact {
+  align-self: start;
+}
 .event-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 10px 22px #234c3e0a;
@@ -630,6 +638,17 @@ html[lang="th"] .handwritten {
 }
 .event-info {
   padding: 20px 20px 16px;
+}
+.event-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 20px 0;
+}
+.event-head .date-sticker,
+.event-head .image-tag {
+  position: static;
+  border: 1px solid var(--line);
 }
 .event-meta {
   display: flex;
@@ -1218,6 +1237,33 @@ html[lang="th"] .handwritten {
 .dialog.wide {
   max-width: 950px;
 }
+/* A slim green scrollbar instead of the grey system one. WebKit/Blink take
+   the pseudo-elements (rounded thumb inset from the corners); browsers
+   without them, such as Firefox, fall back to the standard properties. */
+.dialog::-webkit-scrollbar {
+  width: 10px;
+}
+.dialog::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 14px 0;
+}
+.dialog::-webkit-scrollbar-thumb {
+  background: #234c3e40;
+  border: 3px solid var(--cream);
+  border-radius: 10px;
+}
+.dialog::-webkit-scrollbar-thumb:hover {
+  background: #234c3e80;
+}
+.dialog::-webkit-scrollbar-button {
+  display: none;
+}
+@supports not selector(::-webkit-scrollbar) {
+  .dialog {
+    scrollbar-width: thin;
+    scrollbar-color: #234c3e55 transparent;
+  }
+}
 .close-dialog {
   position: absolute;
   right: 14px;
@@ -1316,6 +1362,210 @@ html[lang="th"] .handwritten {
      optional start time can sit inline as a third column. */
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 15px;
+}
+.club-form .field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.field-label {
+  font-size: 11px;
+  color: var(--green);
+  font-weight: 500;
+}
+.date-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 43px;
+  padding: 12px 13px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  font-size: 12px;
+  color: var(--ink);
+  text-align: left;
+  transition: border-color 150ms ease;
+}
+.date-trigger.empty {
+  color: var(--muted);
+}
+.date-trigger svg {
+  color: var(--green);
+}
+.date-trigger:hover,
+.date-trigger[aria-expanded="true"] {
+  border-color: var(--green);
+}
+.calendar {
+  margin-top: 8px;
+  padding: 14px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 10px 26px #234c3e12;
+}
+.calendar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.calendar-head b {
+  font-family: "Fraunces", "Mitr", serif;
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--green);
+}
+.calendar-head button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: var(--green);
+  transition: background 150ms ease;
+}
+.calendar-head button:hover:not(:disabled) {
+  background: var(--sage);
+}
+.calendar-head button:disabled {
+  color: var(--line);
+  cursor: default;
+}
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+  text-align: center;
+}
+.calendar-grid .weekday {
+  padding: 4px 0 6px;
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.calendar-grid button {
+  justify-self: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 12px;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  transition:
+    background 150ms ease,
+    color 150ms ease;
+}
+.calendar-grid button.outside {
+  color: var(--muted);
+  opacity: 0.55;
+}
+.calendar-grid button:hover:not(:disabled) {
+  background: var(--sage);
+}
+.calendar-grid button.today {
+  box-shadow: inset 0 0 0 1px var(--orange);
+}
+.calendar-grid button.selected {
+  background: var(--green);
+  color: var(--paper);
+  opacity: 1;
+}
+.calendar-grid button:disabled {
+  color: var(--line);
+  opacity: 1;
+  cursor: default;
+}
+.calendar button:focus-visible,
+.date-trigger:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+.time-picker {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+.time-picker legend {
+  padding: 0;
+  margin-bottom: 8px;
+  font-size: 11px;
+  color: var(--green);
+  font-weight: 500;
+}
+.time-options {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.time-options.three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.time-options.roles {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.time-options.roles span {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 10px 13px;
+  text-align: left;
+  line-height: 1.3;
+}
+.time-options.roles svg {
+  flex-shrink: 0;
+  color: var(--green);
+  transition: color 150ms ease;
+}
+.time-options.roles input:checked + span svg {
+  color: var(--paper);
+}
+.club-form .time-options label {
+  position: relative;
+  display: block;
+}
+.club-form .time-options input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.time-options span {
+  display: grid;
+  place-items: center;
+  min-height: 43px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--paper);
+  font-size: 12px;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease;
+}
+.time-options label:hover span {
+  border-color: var(--green);
+}
+.time-options input:checked + span {
+  background: var(--green);
+  border-color: var(--green);
+  color: var(--paper);
+}
+.time-options input:focus-visible + span {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
 }
 .club-form .checkbox-label {
   flex-direction: row;
@@ -2197,6 +2447,115 @@ a:is(:hover, :focus-visible) .brand-mark { transform: rotate(3deg); }
 .main-nav a:is(:hover, :focus-visible)::before { transform: scaleX(1); }
 .dialog[open] { animation: dialog-arrive 300ms cubic-bezier(0.2, 0.7, 0.2, 1); }
 .dialog[open]::backdrop { animation: backdrop-arrive 300ms ease-out; }
+
+/* Form motion: fields settle in one after another, controls answer each
+   press, and the calendar unfolds. The reduced-motion block below turns all
+   of it off. */
+@keyframes field-arrive {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes chip-pop {
+  0% { transform: scale(0.94); }
+  60% { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+@keyframes calendar-open {
+  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes month-next {
+  from { opacity: 0; transform: translateX(18px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes month-previous {
+  from { opacity: 0; transform: translateX(-18px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes error-shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-5px); }
+  40%, 80% { transform: translateX(5px); }
+}
+@keyframes success-pop {
+  0% { opacity: 0; transform: scale(0.5) rotate(-12deg); }
+  70% { opacity: 1; transform: scale(1.12) rotate(3deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+.dialog[open] .club-form > * {
+  animation: field-arrive 420ms cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+}
+.dialog[open] .club-form > :nth-child(1) { animation-delay: 80ms; }
+.dialog[open] .club-form > :nth-child(2) { animation-delay: 120ms; }
+.dialog[open] .club-form > :nth-child(3) { animation-delay: 160ms; }
+.dialog[open] .club-form > :nth-child(4) { animation-delay: 200ms; }
+.dialog[open] .club-form > :nth-child(5) { animation-delay: 240ms; }
+.dialog[open] .club-form > :nth-child(6) { animation-delay: 280ms; }
+.dialog[open] .club-form > :nth-child(7) { animation-delay: 320ms; }
+.dialog[open] .club-form > :nth-child(n + 8) { animation-delay: 360ms; }
+.club-form input,
+.club-form select,
+.club-form textarea {
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+.club-form input:focus,
+.club-form select:focus,
+.club-form textarea:focus {
+  outline: none;
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px #234c3e1a;
+}
+.time-options span {
+  transition:
+    background 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    transform 120ms ease;
+}
+.time-options label:active span {
+  transform: scale(0.96);
+}
+.time-options input:checked + span {
+  animation: chip-pop 280ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.date-trigger svg {
+  transition: transform 220ms ease;
+}
+.date-trigger[aria-expanded="true"] svg {
+  transform: rotate(-8deg) scale(1.12);
+}
+.calendar {
+  transform-origin: top center;
+  animation: calendar-open 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.calendar-grid.next { animation: month-next 240ms ease-out; }
+.calendar-grid.previous { animation: month-previous 240ms ease-out; }
+.calendar-grid button:active:not(:disabled) {
+  transform: scale(0.9);
+}
+.calendar-grid button.selected {
+  animation: chip-pop 280ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.club-form .button svg {
+  transition: transform 200ms ease;
+}
+.club-form .button:hover:not(:disabled) svg {
+  transform: translate(3px, -3px);
+}
+.club-form .button:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+.club-form .form-error {
+  animation: error-shake 360ms ease;
+}
+.form-success > svg {
+  animation: success-pop 520ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.form-success > :not(svg) {
+  animation: field-arrive 420ms 200ms cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+}
 @media (max-width: 650px) {
   .hero-slideshow { border-top-left-radius: 105px; }
   .marquee-group { gap: 26px; padding-right: 26px; }

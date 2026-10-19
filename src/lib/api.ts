@@ -21,7 +21,11 @@ export type Article = {
   excerpt: string;
   body: string;
   image: string;
+  /** Thai text; any field left out falls back to the English one. */
+  th?: Partial<Pick<Article, "title" | "category" | "excerpt" | "body">>;
 };
+export const localizeArticle = (article: Article, lang: string): Article =>
+  lang === "th" && article.th ? { ...article, ...article.th } : article;
 export type Content = { events: ClubEvent[]; news: Article[] };
 export type Submission = {
   id: string;

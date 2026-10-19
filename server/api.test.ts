@@ -127,7 +127,7 @@ test("public content and input validation", async (t) => {
   const request = await setup(t);
   const content = await request("/api/content");
   assert.equal(content.status, 200);
-  assert.equal(content.data.events.length, 7);
+  assert.equal(content.data.events.length, 9);
   const loy = content.data.events.find(
     (event: Json) => event.id === "loy-krathong-2026",
   );

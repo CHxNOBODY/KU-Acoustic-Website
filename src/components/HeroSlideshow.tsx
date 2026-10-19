@@ -10,6 +10,12 @@ const slides = [
   { image: "run-stage", alt: { en: "KU Acoustic performers together on the Run In Rhythm stage", th: "นักแสดง KU Acoustic พร้อมหน้ากันบนเวที Run In Rhythm" } },
   { image: "run-crowd", alt: { en: "The audience singing along at Run In Rhythm Concert", th: "ผู้ชมร้องตามในคอนเสิร์ต Run In Rhythm" } },
   { image: "run-family", alt: { en: "The performers and audience together after Run In Rhythm Concert", th: "นักแสดงและผู้ชมพร้อมหน้ากันหลังคอนเสิร์ต Run In Rhythm" } },
+  { image: "hero-vocal", alt: { en: "A KU Acoustic singer on a flower-decked stage at the Royal Project show", th: "นักร้อง KU Acoustic บนเวทีประดับดอกไม้ในงานโครงการหลวง" } },
+  { image: "kaset-stage", alt: { en: "Three KU Acoustic vocalists under the stage lights at Kaset Fair", th: "นักร้อง KU Acoustic สามคนใต้แสงไฟบนเวทีงานเกษตรแฟร์" } },
+  { image: "royal-guitar", alt: { en: "Two KU Acoustic guitarists playing acoustic guitars at the Royal Project show", th: "มือกีตาร์ KU Acoustic สองคนเล่นกีตาร์โปร่งในงานโครงการหลวง" } },
+  { image: "freshy-band", alt: { en: "KU Acoustic in cowboy costumes singing at Freshy Day Freshy Night", th: "KU Acoustic ในชุดคาวบอยร้องเพลงในงาน Freshy Day Freshy Night" } },
+  { image: "royal-singer", alt: { en: "A KU Acoustic vocalist singing to the crowd at the Royal Project show", th: "นักร้อง KU Acoustic ร้องเพลงให้ผู้ชมในงานโครงการหลวง" } },
+  { image: "kaset-guitar", alt: { en: "A KU Acoustic guitarist playing with the band at Kaset Fair", th: "มือกีตาร์ KU Acoustic เล่นร่วมกับวงในงานเกษตรแฟร์" } },
 ];
 
 export default function HeroSlideshow() {
