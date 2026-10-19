@@ -1,14 +1,15 @@
-import { createServer as createViteServer } from "vite";
-import { createClubServer } from "../server/index.mjs";
+import type { AddressInfo } from "node:net";
+import { createServer as createViteServer, type ViteDevServer } from "vite";
+import { createClubServer } from "../server/index.ts";
 
 try {
   process.loadEnvFile(".env");
 } catch (error) {
-  if (error.code !== "ENOENT") throw error;
+  if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
 }
 
 const backend = createClubServer();
-let frontend;
+let frontend: ViteDevServer | undefined;
 let stopping = false;
 async function stop(code = 0) {
   if (stopping) return;
@@ -22,9 +23,9 @@ async function stop(code = 0) {
 process.on("SIGINT", () => void stop());
 process.on("SIGTERM", () => void stop());
 
-function listen(port) {
-  return new Promise((resolve, reject) => {
-    function onError(error) {
+function listen(port: number) {
+  return new Promise<void>((resolve, reject) => {
+    function onError(error: Error) {
       backend.off("listening", onListening);
       reject(error);
     }
@@ -43,12 +44,12 @@ try {
   try {
     await listen(preferredPort);
   } catch (error) {
-    if (error.code !== "EADDRINUSE") throw error;
+    if ((error as NodeJS.ErrnoException).code !== "EADDRINUSE") throw error;
     console.log(`Backend port ${preferredPort} is busy; choosing a free port.`);
     await listen(0);
   }
 
-  const backendUrl = `http://127.0.0.1:${backend.address().port}`;
+  const backendUrl = `http://127.0.0.1:${(backend.address() as AddressInfo).port}`;
   console.log(`Club backend ready at ${backendUrl}`);
   frontend = await createViteServer({
     server: {

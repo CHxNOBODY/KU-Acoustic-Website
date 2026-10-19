@@ -1,25 +1,37 @@
-import { test } from "node:test";
+import { test, type TestContext } from "node:test";
 import assert from "node:assert/strict";
 import { once } from "node:events";
-import { mkdtempSync, rmSync, existsSync, readdirSync } from "node:fs";
+import { mkdtempSync, rmSync, existsSync, readdirSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createClubServer } from "./index.mjs";
+import type { AddressInfo } from "node:net";
+import type { Server } from "node:http";
+import { createClubServer, type ClubServerOptions } from "./index.ts";
 import { DatabaseSync } from "node:sqlite";
-import { createClubHandler } from "../supabase/functions/club-api/handler.mjs";
+import { HANDLER_COPY, expectedCopy } from "../scripts/prepare-supabase.ts";
 
-async function setup(t, options = {}) {
+// Response bodies are whatever JSON the API returned.
+type Json = any;
+const port = (server: Server) => (server.address() as AddressInfo).port;
+const closed = (server: Server) =>
+  new Promise<void>((resolve) => server.close(() => resolve()));
+
+async function setup(t: TestContext, options: ClubServerOptions = {}) {
   const server = createClubServer({
     databasePath: ":memory:",
     adminToken: "test-secret",
-    ...(process.env.TEST_SUPABASE_HANDLER ? { handlerFactory: createClubHandler } : {}),
     ...options,
   });
   server.listen(0, "127.0.0.1");
   await once(server, "listening");
-  t.after(() => new Promise((resolve) => server.close(resolve)));
-  const base = `http://127.0.0.1:${server.address().port}`;
-  async function request(path, body, cookie, method) {
+  t.after(() => closed(server));
+  const base = `http://127.0.0.1:${port(server)}`;
+  async function request(
+    path: string,
+    body?: object | null,
+    cookie?: string,
+    method?: string,
+  ): Promise<{ status: number; data: Json; cookie?: string }> {
     const response = await fetch(base + path, {
       method: method || (body ? "POST" : "GET"),
       headers: {
@@ -68,10 +80,10 @@ test("stock artwork migrates to local club photos while preserving edited conten
   const request = await setup(t, { databasePath });
   t.after(() => rmSync(dir, { recursive: true, force: true }));
   const { data } = await request("/api/content");
-  const migrated = data.events.find((event) => event.id === "royal-project");
+  const migrated = data.events.find((event: Json) => event.id === "royal-project");
   assert.equal(migrated.image, "royal-stage");
   assert.equal(migrated.title, "Committee edited title");
-  const article = data.news.find((item) => item.id === "custom-post");
+  const article = data.news.find((item: Json) => item.id === "custom-post");
   assert.equal(article.image, "freshy-friends");
   assert.equal(article.body, "Saved article text");
 });
@@ -87,7 +99,7 @@ test("event video links can be published, preserved, replaced and cleared; unsaf
   const created = await request("/api/admin/content", { ...payload, link }, cookie);
   assert.equal(created.status, 201);
   const id = created.data.id;
-  const readLink = async () => (await request("/api/content")).data.events.find((event) => event.id === id).link;
+  const readLink = async () => (await request("/api/content")).data.events.find((event: Json) => event.id === id).link;
   assert.equal(await readLink(), link);
   const updated = await request("/api/admin/content", { ...payload, id, title: "New title" }, cookie, "PUT");
   assert.equal(updated.data.link, link);
@@ -104,10 +116,10 @@ test("event video links can be published, preserved, replaced and cleared; unsaf
 
 test("Run In Rhythm uses its own concert artwork and retains the recording", async (t) => {
   const request = await setup(t);
-  const event = (await request("/api/content")).data.events.find((item) => item.id === "run-in-rhythm");
+  const event = (await request("/api/content")).data.events.find((item: Json) => item.id === "run-in-rhythm");
   assert.equal(event.image, "run-stage");
   assert.equal(event.link, "https://www.youtube.com/live/ib7OgoWOZQ8?si=IiGXu8RoNbARWbDo");
-  const exhibition = (await request("/api/content")).data.events.find((item) => item.id === "open-world");
+  const exhibition = (await request("/api/content")).data.events.find((item: Json) => item.id === "open-world");
   assert.equal(exhibition.title, "KU Club Exhibition");
   assert.equal(exhibition.link, "https://youtu.be/L_xYNuuvxO4?si=vIbX1RbkYNPAtqiE");
 });
@@ -117,7 +129,7 @@ test("public content and input validation", async (t) => {
   assert.equal(content.status, 200);
   assert.equal(content.data.events.length, 7);
   const loy = content.data.events.find(
-    (event) => event.id === "loy-krathong-2026",
+    (event: Json) => event.id === "loy-krathong-2026",
   );
   assert.equal(loy.title, "Loy Kra Tong 2026");
   assert.equal(loy.venue, "Lan Dao");
@@ -128,7 +140,7 @@ test("public content and input validation", async (t) => {
   assert.equal(loy.image, undefined);
   // The truck show has its own photograph, not a borrowed Kaset Fair one.
   assert.equal(
-    content.data.events.find((event) => event.id === "acoustic-truck").image,
+    content.data.events.find((event: Json) => event.id === "acoustic-truck").image,
     "truck-community",
   );
   // No event carries a guest limit any more.
@@ -434,7 +446,7 @@ test("data survives server restart", async (t) => {
   });
   server.listen(0, "127.0.0.1");
   await once(server, "listening");
-  await fetch(`http://127.0.0.1:${server.address().port}/api/submissions`, {
+  await fetch(`http://127.0.0.1:${port(server)}/api/submissions`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -442,24 +454,24 @@ test("data survives server restart", async (t) => {
       email: "persistent@example.com",
     }),
   });
-  await new Promise((resolve) => server.close(resolve));
+  await closed(server);
   server = createClubServer({ databasePath: path, adminToken: "test-secret" });
   server.listen(0, "127.0.0.1");
   await once(server, "listening");
   t.after(async () => {
-    await new Promise((resolve) => server.close(resolve));
+    await closed(server);
     rmSync(dir, { recursive: true, force: true });
   });
-  const base = `http://127.0.0.1:${server.address().port}`;
+  const base = `http://127.0.0.1:${port(server)}`;
   const login = await fetch(base + "/api/admin/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ token: "test-secret" }),
   });
   const rows = await fetch(base + "/api/admin/submissions", {
-    headers: { Cookie: login.headers.get("set-cookie").split(";")[0] },
+    headers: { Cookie: login.headers.get("set-cookie")!.split(";")[0] },
   });
-  assert.equal((await rows.json())[0].email, "persistent@example.com");
+  assert.equal(((await rows.json()) as Json)[0].email, "persistent@example.com");
 });
 test("cross-origin mutation is rejected and unconfigured admin remains locked", async (t) => {
   const request = await setup(t, { adminToken: "" });
@@ -470,9 +482,9 @@ test("cross-origin mutation is rejected and unconfigured admin remains locked", 
   const server = createClubServer({ databasePath: ":memory:" });
   server.listen(0, "127.0.0.1");
   await once(server, "listening");
-  t.after(() => new Promise((resolve) => server.close(resolve)));
+  t.after(() => closed(server));
   const response = await fetch(
-    `http://127.0.0.1:${server.address().port}/api/submissions`,
+    `http://127.0.0.1:${port(server)}/api/submissions`,
     {
       method: "POST",
       headers: {
@@ -493,19 +505,16 @@ test("built assets are served with correct types and cache lifetimes", async (t)
   const server = createClubServer({
     databasePath: ":memory:",
     adminToken: "test-secret",
-    ...(process.env.TEST_SUPABASE_HANDLER
-      ? { handlerFactory: createClubHandler }
-      : {}),
   });
   server.listen(0, "127.0.0.1");
   await once(server, "listening");
-  t.after(() => new Promise((resolve) => server.close(resolve)));
-  const base = `http://127.0.0.1:${server.address().port}`;
+  t.after(() => closed(server));
+  const base = `http://127.0.0.1:${port(server)}`;
 
-  const bundle = readdirSync("dist/assets").find((name) => name.endsWith(".js"));
+  const bundle = readdirSync("dist/assets").find((name) => name.endsWith(".js"))!;
   const asset = await fetch(`${base}/assets/${bundle}`);
   assert.equal(asset.status, 200);
-  assert.match(asset.headers.get("content-type"), /^text\/javascript/);
+  assert.match(asset.headers.get("content-type") ?? "", /^text\/javascript/);
   // Fingerprinted bundles must never be revalidated.
   assert.equal(
     asset.headers.get("cache-control"),
@@ -515,18 +524,18 @@ test("built assets are served with correct types and cache lifetimes", async (t)
   // The shell carries the asset manifest, so it must always be rechecked.
   const shell = await fetch(`${base}/`);
   assert.equal(shell.status, 200);
-  assert.match(shell.headers.get("content-type"), /^text\/html/);
+  assert.match(shell.headers.get("content-type") ?? "", /^text\/html/);
   assert.equal(shell.headers.get("cache-control"), "no-cache");
 
   // An unknown route falls back to the shell rather than leaking the filesystem.
   const deep = await fetch(`${base}/shows`);
   assert.equal(deep.status, 200);
-  assert.match(deep.headers.get("content-type"), /^text\/html/);
+  assert.match(deep.headers.get("content-type") ?? "", /^text\/html/);
 
   const traversal = await fetch(`${base}/../package.json`, { redirect: "manual" });
   assert.ok([403, 200, 301, 404].includes(traversal.status));
   if (traversal.status === 200)
-    assert.match(traversal.headers.get("content-type"), /^text\/html/);
+    assert.match(traversal.headers.get("content-type") ?? "", /^text\/html/);
 });
 
 test("events without a capacity are unlimited and date-only events stay open all day", async (t) => {
@@ -640,5 +649,13 @@ test("events without a capacity are unlimited and date-only events stay open all
       })
     ).status,
     400,
+  );
+});
+
+test("the Supabase Edge Function runs the current handler", () => {
+  assert.equal(
+    readFileSync(HANDLER_COPY, "utf8"),
+    expectedCopy(),
+    "Run `node scripts/prepare-supabase.ts` to refresh the Edge Function copy.",
   );
 });

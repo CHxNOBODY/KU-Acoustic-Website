@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, writeFileSync } from 'node:fs';
 
 const db = new DatabaseSync(process.env.DATABASE_PATH || './data/club.sqlite', { readOnly: true });
-const literal = value => value == null ? 'NULL' : "'" + String(value).replaceAll("'", "''") + "'";
+const literal = (value: unknown) => value == null ? 'NULL' : "'" + String(value).replaceAll("'", "''") + "'";
 const statements = ['begin;'];
 for (const table of ['content', 'submissions']) {
   const rows = db.prepare(`select * from ${table}`).all();

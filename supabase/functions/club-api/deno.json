@@ -1,4 +1,4 @@
 {
-  "compilerOptions": { "allowJs": true, "checkJs": false },
+  "compilerOptions": { "strict": true },
   "imports": { "node:buffer": "node:buffer" }
 }

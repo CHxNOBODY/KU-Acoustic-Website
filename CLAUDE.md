@@ -11,9 +11,17 @@ npm run typecheck  # type check only
 npm run preview    # serve the built dist/ at http://localhost:4173
 ```
 
-There is no test suite and no linter. `npm run typecheck` is the only automated check —
-`tsconfig.json` runs `strict` plus `noUnusedLocals` / `noUnusedParameters`, so unused
-imports or variables fail the build, not just the editor.
+`npm test` runs the API integration tests; there is no linter. `npm run typecheck` checks
+the frontend (`tsconfig.json`) and the backend (`tsconfig.server.json`), both with `strict`
+plus `noUnusedLocals` / `noUnusedParameters`, so unused imports or variables fail the
+build, not just the editor.
+
+The backend (`server/`, `scripts/`) is TypeScript run directly by Node 24's type
+stripping — no build step. Use only erasable syntax (no enums, namespaces or parameter
+properties), `import type` for types, and `.ts` extensions in relative imports.
+`server/handler.ts` is the whole API and is shared with the Supabase Edge Function:
+after changing it, run `npm run prepare:supabase` to refresh
+`supabase/functions/club-api/handler.ts` (`npm test` fails while that copy is stale).
 
 ## Architecture
 

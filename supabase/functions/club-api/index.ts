@@ -1,6 +1,6 @@
 import postgres from 'npm:postgres@3.4.7';
 import { Buffer } from 'node:buffer';
-import { createClubHandler } from './handler.mjs';
+import { createClubHandler, type ClubRequest, type ClubResponse } from './handler.ts';
 
 // Supabase provides this server-only connection string automatically.
 const sql = postgres(Deno.env.get('SUPABASE_DB_URL')!, {
@@ -67,7 +67,7 @@ Deno.serve(async (request: Request) => {
       const [setting] = await transaction`select value from settings where key = 'admin_token_sha256'`;
       const headers = Object.fromEntries(request.headers);
       headers.host = url.host;
-      const req = {
+      const req: ClubRequest = {
         url: path + url.search, method: request.method, headers,
         socket: { remoteAddress: 'edge' },
         async *[Symbol.asyncIterator]() {
@@ -84,12 +84,12 @@ Deno.serve(async (request: Request) => {
       };
       let status = 200;
       let payload: string | null = null;
-      const res = {
+      const res: ClubResponse = {
         writeHead(code: number, values: Record<string, string>) {
           status = code;
           for (const [key, value] of Object.entries(values)) cors.set(key, value);
         },
-        end(value: string) { payload = value ?? null; },
+        end(value) { payload = typeof value === 'string' ? value : null; },
       };
       const handler = createClubHandler({ db: database(transaction), adminTokenDigest: setting?.value, allowedOrigins, production: true });
       await handler(req, res);

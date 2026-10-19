@@ -1,0 +1,25 @@
+{
+  // The backend runs as TypeScript directly: Node 24 strips the types at load
+  // time and Supabase's Deno runtime does the same for the Edge Function. Both
+  // only erase annotations, so syntax that needs compiling (enums, namespaces,
+  // parameter properties) is rejected here, and type-only imports must say so.
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "types": ["node"],
+    "skipLibCheck": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  // The Edge Function entry point uses Deno globals; its handler copy is
+  // byte-for-byte server/handler.ts, which is already checked here.
+  "include": ["server", "scripts/*.ts"]
+}

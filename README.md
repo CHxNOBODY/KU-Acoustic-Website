@@ -30,12 +30,13 @@ Run `npm run dev` to start both the frontend and backend. Open the local URL pri
 | `npm run dev`          | Frontend and backend together                           |
 | `npm run dev:frontend` | Vite only                                               |
 | `npm run dev:backend`  | Backend only                                            |
-| `npm run typecheck`    | Strict TypeScript checks                                |
+| `npm run typecheck`    | Strict TypeScript checks, frontend and backend          |
 | `npm test`             | API integration tests, with isolated test databases     |
 | `npm run build`        | Typecheck and production frontend build                 |
 | `npm start`            | Backend serving the API and built frontend on port 3001 |
+| `npm run prepare:supabase` | Copy the API handler into the Edge Function          |
 
-Restart the backend after changing server files or environment settings. React and CSS changes reload automatically.
+The backend is TypeScript that Node 24 runs directly, with no build step: Node strips the type annotations when it loads each file. `tsconfig.server.json` only allows syntax that can be stripped this way. Restart the backend after changing server files or environment settings. React and CSS changes reload automatically.
 
 ## Project structure
 
@@ -46,10 +47,11 @@ src/lib/api.ts                      API client and shared types
 src/components/Dialog.tsx           Accessible native modal
 src/features/community/             Application and request forms
 src/features/admin/                 Committee dashboard
-server/index.mjs                    HTTP API, sessions, database, static hosting
-server/seed.mjs                     Initial content and original show archive
-server/api.test.mjs                 Integration tests
-scripts/dev.mjs                     Development process launcher
+server/handler.ts                   HTTP API, sessions, validation, static hosting (shared with Supabase)
+server/index.ts                     Node server: SQLite database, data migrations
+server/seed.ts                      Initial content and original show archive
+server/api.test.ts                  Integration tests
+scripts/dev.ts                      Development process launcher
 data/club.sqlite                    Runtime database (ignored by Git)
 ```
 
@@ -90,20 +92,11 @@ Deployment sources:
 
 - `supabase/schema.sql`: the schema applied as the `ku_acoustic_backend` remote migration.
 - `supabase/functions/club-api/index.ts`: Postgres transactions, persisted rate limits, CORS, and the Edge HTTP adapter.
-- `supabase/functions/club-api/handler.mjs`: portable handler generated from `server/index.mjs` by `node scripts/prepare-supabase.mjs`. Regenerate and redeploy after changing the Node API. Every transform in that script asserts that it matched and the result is parsed before it is written, so reformatting the Node API fails the build instead of silently producing a handler that drops a rule.
+- `supabase/functions/club-api/handler.ts`: a copy of `server/handler.ts`, the same handler the Node server runs, made by `npm run prepare:supabase` because Supabase only bundles files under `supabase/functions`. Refresh it and redeploy after changing the API; `npm test` fails while the copy is stale.
 - `supabase/config.toml`: local function configuration. Gateway JWT verification is disabled because the handler implements custom committee authentication and accepts public forms.
-- `scripts/export-supabase-data.mjs`: optional SQLite snapshot exporter. Run with `node --env-file=.env scripts/export-supabase-data.mjs`. Its output is in ignored `artifacts/supabase-data.sql`; it contains submission data and must stay private. Exporting does not upload or synchronize data.
+- `scripts/export-supabase-data.ts`: optional SQLite snapshot exporter. Run with `node --env-file=.env scripts/export-supabase-data.ts`. Its output is in ignored `artifacts/supabase-data.sql`; it contains submission data and must stay private. Exporting does not upload or synchronize data.
 
 The function uses Supabase's built-in server-only `SUPABASE_DB_URL`; no database credentials or service keys are included in frontend code. Before redeploying, discover the installed Supabase CLI commands with `--help`, authenticate to the project, and deploy `club-api`. The Supabase connector can also deploy the three files in the function directory, explicitly setting `import_map_path` to `deno.json` when updating an existing deployment.
-
-To run the API integration suite against the portable handler in PowerShell:
-
-```powershell
-node scripts/prepare-supabase.mjs
-$env:TEST_SUPABASE_HANDLER = '1'
-npm test
-Remove-Item Env:TEST_SUPABASE_HANDLER
-```
 
 Deployment checks passed for public content, protected routes, committee login/logout, secure cookies, simultaneous registrations at capacity, newsletter deduplication, rehearsal overlap prevention, validation, and CORS. Temporary verification records were removed. Supabase's security advisor reported only informational notices about RLS tables without policies, which is intentional for this private schema with access through the backend.
 

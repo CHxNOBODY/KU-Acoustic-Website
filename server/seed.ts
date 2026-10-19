@@ -1,4 +1,6 @@
-export const events = [
+import type { ContentItem } from "./handler.ts";
+
+export const events: ContentItem[] = [
   {
     id: "loy-krathong-2026",
     title: "Loy Kra Tong 2026",
@@ -24,7 +26,7 @@ export const events = [
     sample: false,
   },
 ];
-export const news = [
+export const news: ContentItem[] = [
   {
     id: "welcome",
     title: "Your people. Your music. Your place.",
@@ -58,7 +60,7 @@ export const news = [
 ];
 
 // Original club show archive, retained from the previous website.
-export const archive = [
+export const archive: ContentItem[] = [
   {
     id: "open-world",
     title: "KU Club Exhibition",
