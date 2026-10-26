@@ -1,0 +1,425 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-25T13:55:23.271Z",
+  "title": "Design System: KU Acoustic",
+  "extensions": {
+    "colorMeta": {
+      "kasetsart-forest": {
+        "role": "primary",
+        "displayName": "Kasetsart Forest",
+        "tonalRamp": [
+          "#0b1713",
+          "#12261f",
+          "#19352b",
+          "#204438",
+          "#4f7065",
+          "#869d95",
+          "#bdc9c5",
+          "#e9edec"
+        ]
+      },
+      "forest-night": {
+        "role": "primary",
+        "displayName": "Forest Night",
+        "tonalRamp": [
+          "#07120e",
+          "#0c1e18",
+          "#102922",
+          "#15352b",
+          "#456259",
+          "#7f938d",
+          "#b9c4c1",
+          "#e8ebea"
+        ]
+      },
+      "fired-clay": {
+        "role": "secondary",
+        "displayName": "Fired Clay",
+        "tonalRamp": [
+          "#392114",
+          "#5f3721",
+          "#854c2e",
+          "#ab623b",
+          "#cb8a67",
+          "#dbaf97",
+          "#ecd3c6",
+          "#f9f0ec"
+        ]
+      },
+      "clay-ink": {
+        "role": "secondary",
+        "displayName": "Clay Ink",
+        "tonalRamp": [
+          "#301a0e",
+          "#502b17",
+          "#703b20",
+          "#904d29",
+          "#b37758",
+          "#cba28c",
+          "#e3ccc0",
+          "#f6eeea"
+        ]
+      },
+      "pressed-sage": {
+        "role": "neutral",
+        "displayName": "Pressed Sage",
+        "tonalRamp": [
+          "#464744",
+          "#747772",
+          "#a2a69f",
+          "#d1d5cc",
+          "#edf1e9",
+          "#f2f5f0",
+          "#f8faf7",
+          "#fdfdfc"
+        ]
+      },
+      "unbleached-cream": {
+        "role": "neutral",
+        "displayName": "Unbleached Cream",
+        "tonalRamp": [
+          "#4a4a48",
+          "#7c7b78",
+          "#adaca8",
+          "#deddd8",
+          "#f9f8f3",
+          "#fbfaf7",
+          "#fdfcfb",
+          "#fefefe"
+        ]
+      },
+      "rag-paper": {
+        "role": "neutral",
+        "displayName": "Rag Paper",
+        "tonalRamp": [
+          "#4d4c4b",
+          "#807f7d",
+          "#b3b2ae",
+          "#e6e5e0",
+          "#fffefa",
+          "#fffefc",
+          "#fffffd",
+          "#fffffe"
+        ]
+      },
+      "moss-mist": {
+        "role": "neutral",
+        "displayName": "Moss Mist",
+        "tonalRamp": [
+          "#474845",
+          "#777874",
+          "#a6a8a2",
+          "#d5d8d0",
+          "#f1f3ec",
+          "#f5f7f2",
+          "#fafbf8",
+          "#fdfefd"
+        ]
+      },
+      "loam-ink": {
+        "role": "neutral",
+        "displayName": "Loam Ink",
+        "tonalRamp": [
+          "#0b0d0b",
+          "#131613",
+          "#1a1f1b",
+          "#212822",
+          "#515651",
+          "#878b88",
+          "#bec0be",
+          "#e9eae9"
+        ]
+      },
+      "lichen-gray": {
+        "role": "neutral",
+        "displayName": "Lichen Gray",
+        "tonalRamp": [
+          "#1f201d",
+          "#333530",
+          "#474a43",
+          "#5c5f56",
+          "#858880",
+          "#abada8",
+          "#d1d2cf",
+          "#f0f0ef"
+        ]
+      },
+      "chalk-line": {
+        "role": "neutral",
+        "displayName": "Chalk Line",
+        "tonalRamp": [
+          "#434340",
+          "#6f706b",
+          "#9b9c95",
+          "#c8c9c0",
+          "#e5e5dd",
+          "#edede8",
+          "#f5f5f2",
+          "#fcfcfb"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Hero headline only; one green italic phrase."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section and page titles in Fraunces."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Card and article titles."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Paragraphs; supporting copy runs 11–13px in Lichen Gray."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Buttons, text links, nav items, form labels."
+      },
+      "eyebrow": {
+        "displayName": "Eyebrow",
+        "purpose": "Tracked uppercase kicker above section headlines."
+      }
+    },
+    "shadows": [
+      {
+        "name": "card-lift",
+        "value": "0 10px 22px #234c3e0a",
+        "purpose": "Event card hover, with translateY(-4px)."
+      },
+      {
+        "name": "pinned-note",
+        "value": "0 8px 30px #00000015",
+        "purpose": "Rotated paper note over the hero photo."
+      },
+      {
+        "name": "popover",
+        "value": "0 10px 26px #234c3e12",
+        "purpose": "Date-picker calendar."
+      },
+      {
+        "name": "dialog",
+        "value": "0 30px 100px #0004",
+        "purpose": "Modal dialogs over a #14271ed0 backdrop."
+      },
+      {
+        "name": "focus-halo",
+        "value": "0 0 0 3px #234c3e1a",
+        "purpose": "Form field focus, with a green border."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-settle",
+        "value": "cubic-bezier(0.2, 0.7, 0.2, 1)",
+        "purpose": "Arrow nudges, dialog arrival, field stagger, chip pop."
+      },
+      {
+        "name": "ease-slide",
+        "value": "cubic-bezier(0.22, 0.68, 0.25, 1)",
+        "purpose": "Hero slideshow transform (800ms) with a 650ms opacity fade."
+      },
+      {
+        "name": "hover-lift",
+        "value": "200ms",
+        "purpose": "Button and card lift on hover."
+      },
+      {
+        "name": "nudge",
+        "value": "260ms",
+        "purpose": "Trailing arrow translate(3px, -3px)."
+      },
+      {
+        "name": "chip-pop",
+        "value": "280ms",
+        "purpose": "Checked option chip and selected calendar date."
+      },
+      {
+        "name": "dialog-arrive",
+        "value": "300ms",
+        "purpose": "Dialog and backdrop entrance."
+      },
+      {
+        "name": "field-arrive",
+        "value": "420ms, staggered 40ms",
+        "purpose": "Form fields settling in when a dialog opens."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "small-phone",
+        "value": "380px"
+      },
+      {
+        "name": "phone",
+        "value": "650px"
+      },
+      {
+        "name": "mobile",
+        "value": "760px"
+      },
+      {
+        "name": "tablet",
+        "value": "1050px"
+      },
+      {
+        "name": "wide",
+        "value": "1500px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main call to action: join, register, send.",
+      "html": "<button class=\"ds-btn-primary\">Join the club <svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M7 17 17 7\"/><path d=\"M7 7h10v10\"/></svg></button>",
+      "css": ".ds-btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:20px;min-height:47px;padding:13px 22px;border-radius:5px;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:500;border:0;cursor:pointer;transition:background .2s,transform .2s;background:var(--green,#234c3e);color:var(--cream,#f7f6f0);} .ds-btn-primary:hover{background:var(--green-dark,#173b30);} .ds-btn-primary:hover{transform:translateY(-2px);} .ds-btn-primary:active{transform:translateY(0) scale(.98);} .ds-btn-primary svg{transition:transform 260ms cubic-bezier(.2,.7,.2,1);} .ds-btn-primary:is(:hover,:focus-visible) svg{transform:translate(3px,-3px);} .ds-btn-primary:focus-visible{outline:2px solid var(--orange,#be6d41);outline-offset:5px;}"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary action beside a primary button.",
+      "html": "<button class=\"ds-btn-outline\">Get to know us</button>",
+      "css": ".ds-btn-outline{display:inline-flex;align-items:center;justify-content:center;gap:20px;min-height:47px;padding:13px 22px;border-radius:5px;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:500;border:0;cursor:pointer;transition:background .2s,transform .2s;background:transparent;color:var(--ink,#252c26);border:1px solid var(--line,#dedfd5);} .ds-btn-outline:hover{transform:translateY(-2px);} .ds-btn-outline:active{transform:translateY(0) scale(.98);} .ds-btn-outline:focus-visible{outline:2px solid var(--orange,#be6d41);outline-offset:5px;}"
+    },
+    {
+      "name": "Cream Button",
+      "kind": "button",
+      "refersTo": "button-cream",
+      "description": "Primary action placed on a green surface such as the join banner.",
+      "html": "<div class=\"ds-green-panel\"><button class=\"ds-btn-cream\">Apply now <svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M7 17 17 7\"/><path d=\"M7 7h10v10\"/></svg></button></div>",
+      "css": ".ds-green-panel{background:var(--green,#234c3e);padding:24px;border-radius:7px;display:inline-block;} .ds-btn-cream{display:inline-flex;align-items:center;justify-content:center;gap:20px;min-height:47px;padding:13px 22px;border-radius:5px;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:500;border:0;cursor:pointer;transition:background .2s,transform .2s;background:var(--cream,#f7f6f0);color:var(--green,#234c3e);} .ds-btn-cream:hover{transform:translateY(-2px);} .ds-btn-cream:active{transform:translateY(0) scale(.98);} .ds-btn-cream svg{transition:transform 260ms cubic-bezier(.2,.7,.2,1);} .ds-btn-cream:is(:hover,:focus-visible) svg{transform:translate(3px,-3px);} .ds-btn-cream:focus-visible{outline:2px solid var(--cream,#f7f6f0);outline-offset:5px;}"
+    },
+    {
+      "name": "Text Link",
+      "kind": "button",
+      "refersTo": "text-link",
+      "description": "Section-level 'view all' link with a nudging arrow.",
+      "html": "<a class=\"ds-text-link\" href=\"#\">All events <svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M7 17 17 7\"/><path d=\"M7 7h10v10\"/></svg></a>",
+      "css": ".ds-text-link{display:inline-flex;align-items:center;gap:15px;padding:8px 0;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:500;color:var(--green,#234c3e);text-decoration:none;} .ds-text-link:hover{color:var(--clay-ink,#a0552e);} .ds-text-link svg{transition:transform 260ms cubic-bezier(.2,.7,.2,1);} .ds-text-link:is(:hover,:focus-visible) svg{transform:translate(3px,-3px);} .ds-text-link:focus-visible{outline:2px solid var(--orange,#be6d41);outline-offset:5px;}"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Form field with the label above and a green focus halo.",
+      "html": "<label class=\"ds-field\"><span>Email address</span><input type=\"email\" placeholder=\"Your email address\"></label>",
+      "css": ".ds-field{display:flex;flex-direction:column;gap:8px;font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:500;color:var(--green,#234c3e);max-width:320px;} .ds-field input{background:var(--paper,#fffef9);border:1px solid var(--line,#dedfd5);border-radius:5px;padding:12px 13px;min-height:43px;font:inherit;font-size:12px;font-weight:400;color:var(--ink,#252c26);transition:border-color 180ms ease,box-shadow 180ms ease;} .ds-field input:focus{outline:none;border-color:var(--green,#234c3e);box-shadow:0 0 0 3px #234c3e1a;}"
+    },
+    {
+      "name": "Search",
+      "kind": "input",
+      "refersTo": "search",
+      "description": "Bordered search box in the events toolbar.",
+      "html": "<label class=\"ds-search\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.3-4.3\"/></svg><input placeholder=\"Search events\"></label>",
+      "css": ".ds-search{display:flex;align-items:center;gap:10px;color:var(--muted,#73776d);border:1px solid var(--line,#dedfd5);border-radius:5px;padding:10px 13px;max-width:280px;font-family:'Space Grotesk',sans-serif;font-size:12px;} .ds-search:focus-within{border-color:var(--green,#234c3e);} .ds-search input{background:none;border:0;outline:none;min-width:0;font:inherit;color:var(--ink,#252c26);}"
+    },
+    {
+      "name": "Filter Chips",
+      "kind": "chip",
+      "refersTo": "filter-chip",
+      "description": "Pill filters for gallery and event categories.",
+      "html": "<div class=\"ds-chips\"><button class=\"ds-chip active\">All</button><button class=\"ds-chip\">Concerts</button><button class=\"ds-chip\">Clubroom</button></div>",
+      "css": ".ds-chips{display:flex;flex-wrap:wrap;gap:8px;} .ds-chip{padding:8px 15px;border:1px solid var(--line,#dedfd5);border-radius:30px;background:transparent;font-family:'Space Grotesk',sans-serif;font-size:11px;color:var(--ink,#252c26);cursor:pointer;transition:background 150ms ease;} .ds-chip:hover:not(.active){background:var(--sage,#e8ede3);} .ds-chip.active{background:var(--green,#234c3e);color:var(--cream,#f7f6f0);border-color:var(--green,#234c3e);} .ds-chip:focus-visible{outline:2px solid var(--orange,#be6d41);outline-offset:5px;}"
+    },
+    {
+      "name": "Event Card",
+      "kind": "card",
+      "refersTo": "event-card",
+      "description": "Paper card with a date sticker, title, meta and a hairline footer.",
+      "html": "<article class=\"ds-event\"><div class=\"ds-event-img\"><span class=\"ds-sticker\"><b>14</b><span>Nov</span></span></div><div class=\"ds-event-info\"><p class=\"ds-event-meta\">CONCERT</p><h3>Run In Rhythm</h3><p class=\"ds-event-sub\">Kasetsart University, Bangkhen</p><div class=\"ds-event-bottom\"><span>Free admission</span><a href=\"#\">Event details <svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M7 17 17 7\"/><path d=\"M7 7h10v10\"/></svg></a></div></div></article>",
+      "css": ".ds-event{width:300px;border:1px solid var(--line,#dedfd5);border-radius:7px;overflow:hidden;background:var(--paper,#fffef9);font-family:'Space Grotesk',sans-serif;color:var(--ink,#252c26);transition:transform .2s,box-shadow .2s;} .ds-event:hover{transform:translateY(-4px);box-shadow:0 10px 22px #234c3e0a;} .ds-event:focus-within{box-shadow:0 10px 22px #234c3e12;} .ds-event-img{position:relative;height:160px;background:linear-gradient(135deg,#4f7065,#173b30);} .ds-sticker{position:absolute;left:17px;top:17px;width:49px;padding:8px 0;background:var(--cream,#f7f6f0);border-radius:4px;display:flex;flex-direction:column;align-items:center;color:var(--green,#234c3e);} .ds-sticker b{font-family:Fraunces,serif;font-size:25px;font-weight:500;line-height:1.2;} .ds-sticker span{font-size:8px;text-transform:uppercase;letter-spacing:1px;margin-top:2px;} .ds-event-info{padding:20px 20px 16px;} .ds-event-meta{margin:0 0 11px;font-size:8px;letter-spacing:1.2px;color:var(--clay-ink,#a0552e);} .ds-event h3{margin:0;font-size:20px;font-weight:500;letter-spacing:-.5px;line-height:1.35;} .ds-event-sub{margin:11px 0 0;font-size:10px;color:var(--muted,#73776d);} .ds-event-bottom{border-top:1px solid var(--line,#dedfd5);margin-top:19px;padding-top:13px;display:flex;justify-content:space-between;align-items:center;font-size:10px;color:var(--muted,#73776d);} .ds-event-bottom a{display:flex;align-items:center;gap:6px;color:var(--green,#234c3e);font-weight:500;text-decoration:none;} .ds-event-bottom a svg{transition:transform 260ms cubic-bezier(.2,.7,.2,1);} .ds-event-bottom a:is(:hover,:focus-visible) svg{transform:translate(3px,-3px);}"
+    },
+    {
+      "name": "Navigation",
+      "kind": "nav",
+      "refersTo": "site-header",
+      "description": "Sticky translucent cream header with a drawn underline and an active dot.",
+      "html": "<header class=\"ds-nav\"><span class=\"ds-brand\"><b>KU</b> ACOUSTIC</span><nav><a class=\"active\" href=\"#\">Home</a><a href=\"#\">Events</a><a href=\"#\">Journal</a><a href=\"#\">Gallery</a></nav><button class=\"ds-lang\">ไทย</button></header>",
+      "css": ".ds-nav{display:flex;align-items:center;justify-content:space-between;gap:30px;height:72px;padding:0 24px;background:rgba(247,246,240,.96);border-bottom:1px solid var(--line,#dedfd5);font-family:'Space Grotesk',sans-serif;} .ds-brand{font-size:19px;letter-spacing:1px;color:var(--green,#234c3e);font-weight:500;} .ds-brand b{font-weight:600;} .ds-nav nav{display:flex;gap:29px;} .ds-nav nav a{position:relative;font-size:12px;color:#666c63;text-decoration:none;padding:8px 0;} .ds-nav nav a::before{content:\"\";position:absolute;left:0;right:0;bottom:0;height:1px;background:currentColor;transform:scaleX(0);transform-origin:left;transition:transform 220ms ease;} .ds-nav nav a:is(:hover,:focus-visible)::before{transform:scaleX(1);} .ds-nav nav a.active{color:var(--green,#234c3e);font-weight:600;} .ds-nav nav a.active::after{content:\"\";position:absolute;width:4px;height:4px;border-radius:50%;background:var(--green,#234c3e);bottom:-10px;left:50%;} .ds-lang{min-height:40px;padding:8px 12px;border:1px solid var(--line,#dedfd5);border-radius:5px;background:transparent;font-size:11px;font-weight:600;color:var(--green,#234c3e);cursor:pointer;transition:background .2s;} .ds-lang:hover{background:var(--sage,#e8ede3);}"
+    },
+    {
+      "name": "Pinned Note",
+      "kind": "custom",
+      "refersTo": "hero-note",
+      "description": "Tilted paper note pinned over the arched hero photo, with the handwritten script line.",
+      "html": "<div class=\"ds-pin-wrap\"><div class=\"ds-note\"><span class=\"ds-note-icon\">♪</span><span>More than a music club.<br><b>A place to belong.</b></span><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M7 17 17 7\"/><path d=\"M7 7h10v10\"/></svg></div></div><span class=\"ds-script\">it starts with a song ↗</span>",
+      "css": ".ds-pin-wrap{position:relative;height:220px;width:340px;background:linear-gradient(135deg,#4f7065,#173b30);border-radius:130px 8px 8px 8px;} .ds-note{position:absolute;left:-14px;bottom:24px;display:flex;align-items:center;gap:15px;background:var(--paper,#fffef9);padding:18px 22px;border-radius:6px;transform:rotate(-4deg);box-shadow:0 8px 30px #00000015;color:var(--green,#234c3e);font-family:'Space Grotesk',sans-serif;font-size:11px;line-height:1.8;} .ds-note b{font-weight:500;} .ds-note svg{color:var(--orange,#be6d41);margin-left:12px;} .ds-note-icon{width:38px;height:38px;border-radius:50%;background:var(--sage,#e8ede3);display:grid;place-items:center;} .ds-script{display:inline-block;margin:14px 0 0 180px;font-family:Fraunces,serif;font-style:italic;font-size:18px;color:var(--clay-ink,#a0552e);transform:rotate(-6deg);}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Clubroom Scrapbook",
+    "overview": "The site reads like a scrapbook the club keeps of itself: warm unbleached paper, forest-green ink, and the club's own photographs pinned in with a few handwritten asides. Real moments carry the page. A large photo with one dramatically arched corner anchors the hero; paper notes sit slightly askew on top of it (rotated −4° to −6°); a terracotta script line (\"it starts with a song ↗\") is scrawled underneath. Everything else is orderly and calm, so those few tilted, handwritten touches read as personality rather than noise.\n\nDensity is light and editorial. Fraunces display type sets warm, slightly literary headlines with one green italic phrase carrying the emphasis, while Space Grotesk handles everything functional in small, tidy sizes. Surfaces are flat paper on paper, separated by hairline chalk rules; depth appears only when something is lifted (a hovered card, a pinned note, an open dialog). Motion is friendly and tactile: buttons rise on hover and press back down, arrows nudge up-right, chips pop when chosen. All of it switches off under reduced motion.\n\nThe system is bilingual by construction. Thai swaps in Anuphan (body) and Mitr (display), drops all letter-spacing, opens up display leading, and never fakes an italic.",
+    "keyCharacteristics": [
+      "Cream paper ground, forest-green ink, terracotta used sparingly as the hand-drawn accent.",
+      "Club photography as the hero material, slightly desaturated (`brightness(0.92) saturate(0.92)`) so it sits on the paper.",
+      "One arched corner as the signature silhouette; everything else softly rounded at 4–7px.",
+      "A few tilted \"pinned\" elements per page, never a whole tilted layout.",
+      "Hairline borders over shadows; shadows reserved for lifted things.",
+      "Small, tracked uppercase eyebrows above every section headline."
+    ],
+    "rules": [
+      {
+        "name": "The Green Ink Rule",
+        "body": "Kasetsart Forest is the only color for interactive emphasis. A button, active tab, selected chip or link is green; nothing interactive is terracotta at rest.",
+        "section": "colors"
+      },
+      {
+        "name": "The Clay Mark Rule",
+        "body": "Fired Clay appears in strokes and small marks (focus rings, icons), never as a background fill or a button. Text in clay always uses Clay Ink.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Italic Phrase Rule",
+        "body": "A serif headline gets at most one `<em>` phrase, set in Kasetsart Forest. It is the emotional beat of the line (\"Find *your people.*\", \"Stay for *the people.*\").",
+        "section": "typography"
+      },
+      {
+        "name": "The Readable Floor Rule",
+        "body": "Nothing a visitor needs to read is under 12px; tracked uppercase labels may sit at 11px. Form fields are 14px (16px on phones, so iOS does not zoom on focus). Only the brand subline and the decorative vertical photo tagline go smaller, and the subline is hidden below 1050px.",
+        "section": "typography"
+      },
+      {
+        "name": "The Thai Typesetting Rule",
+        "body": "Under `html[lang=\"th\"]`: letter-spacing is 0 everywhere except the brand lockup, `h1`/`h2` line-height opens to 1.35, and italics (headline `em`, the handwritten line) render upright, because Mitr has no italic.",
+        "section": "typography"
+      },
+      {
+        "name": "The Lifted-Only Rule",
+        "body": "Nothing rests with a shadow except a pinned note. Cards, buttons and panels are flat until hovered, focused or opened.",
+        "section": "elevation"
+      },
+      {
+        "name": "The One Arch Rule",
+        "body": "At most one arched photo per viewport, and the arch always belongs to a photograph, never to a button, card or panel.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "**Do** use the club's own photographs, softened with `brightness(0.92) saturate(0.92)`, as the main visual material.",
+      "**Do** set section headlines in Fraunces with one green italic phrase, preceded by a 10px tracked uppercase eyebrow.",
+      "**Do** separate surfaces with 1px Chalk Line (#dedfd5) hairlines and tonal steps before reaching for a shadow.",
+      "**Do** keep interactive states green: hover lifts (−2px buttons, −4px cards), arrows nudge up-right, presses scale to 0.98.",
+      "**Do** use Fired Clay (#be6d41) for focus outlines (2px, 5px offset) and small hand-drawn marks.",
+      "**Do** wrap every animation so `prefers-reduced-motion: reduce` turns it off, as the global block in `src/styles/index.css` does.",
+      "**Do** check every new string and style in Thai: no letter-spacing, looser display leading, upright emphasis.",
+      "**Do** give every control a 44px target on phones (header Join, language and menu buttons, slideshow arrows, newsletter submit, social icons). Where 44px cannot fit, as with the slideshow dots, swap the pattern (a `3 / 14` counter) rather than shrinking the target.",
+      "**Do** use `button outline` knowing Tailwind also emits an `.outline` utility; the stylesheet cancels it so only keyboard focus draws a ring."
+    ],
+    "donts": [
+      "**Don't** fill buttons or backgrounds with Fired Clay; it is an accent stroke, not a surface.",
+      "**Don't** tilt more than the one or two pinned elements in a view; the rotation only reads as charm against an orderly page.",
+      "**Don't** put the arched corner on anything but a photograph, or use more than one arch per viewport.",
+      "**Don't** give resting cards or panels a shadow.",
+      "**Don't** use sharp 0px corners or pure black-on-white; that was the retired \"paper & ink\" look and its unused legacy components (`Nav.tsx`, `Footer.tsx`, `Waveform.tsx`, `features/hero/Hero.tsx`).",
+      "**Don't** style new UI with the leftover Tailwind semantic tokens (`bg-background`, `text-foreground`); the shipped system is the CSS custom properties and classes in `src/styles/index.css`."
+    ]
+  }
+}

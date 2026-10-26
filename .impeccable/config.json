@@ -8,6 +8,12 @@
         "value": "fraunces",
         "createdAt": "2026-10-19T16:38:21.274Z",
         "reason": "project convention: CLAUDE.md names Fraunces as the site's display font, already used site-wide (headings, date stickers)"
+      },
+      {
+        "rule": "overused-font",
+        "value": "space grotesk",
+        "createdAt": "2026-10-25T13:55:53.813Z",
+        "reason": "project convention: CLAUDE.md and DESIGN.md name Space Grotesk as the site's body font, used site-wide; same basis as the existing Fraunces exception"
       }
     ]
   }
