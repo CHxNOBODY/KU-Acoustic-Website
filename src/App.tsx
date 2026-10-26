@@ -4,9 +4,12 @@ import {
   useEffect,
   useRef,
   useState,
+  type CSSProperties,
   type FormEvent,
 } from "react";
 import useScrollReveal from "@/lib/useScrollReveal";
+import { transitionName, withTransition } from "@/lib/viewTransition";
+import { categoryTones, type Tone } from "@/lib/categoryTone";
 import {
   ArrowDown,
   ArrowRight,
@@ -104,9 +107,14 @@ function Brand({ light = false }: { light?: boolean }) {
 }
 function EventCard({
   event,
+  tone,
+  filler = false,
   onOpen,
 }: {
   event: ClubEvent;
+  tone: Tone;
+  /** A past show filling out the home row; hidden in a single column. */
+  filler?: boolean;
   onOpen: () => void;
 }) {
   const { t } = useLang();
@@ -117,14 +125,19 @@ function EventCard({
         <b>{dateLabel(event.date, { day: "2-digit" }, t.locale)}</b>
         <span>{dateLabel(event.date, { month: "short" }, t.locale)}</span>
       </span>
-      <span className="image-tag">{event.category}</span>
+      <span className="image-tag" data-tone={tone}>
+        {event.category}
+      </span>
     </>
   );
   // Upcoming events never show a photo frame, and neither does an event
   // without a photo; the date and category then sit above the details.
   const framed = past && event.image;
   return (
-    <article className={`event-card${framed ? "" : " compact"}`}>
+    <article
+      className={`event-card${framed ? "" : " compact"}${filler ? " filler" : ""}`}
+      style={{ "--vt-name": transitionName("event", event.id) } as CSSProperties}
+    >
       {framed ? (
         <button
           className="event-image"
@@ -174,9 +187,11 @@ function EventCard({
 }
 function ArticleCard({
   article: original,
+  tone,
   onOpen,
 }: {
   article: Article;
+  tone: Tone;
   onOpen: () => void;
 }) {
   const { lang, t } = useLang();
@@ -195,7 +210,7 @@ function ArticleCard({
         />
       </button>
       <div className="article-meta">
-        <span>{article.category}</span>
+        <span data-tone={tone}>{article.category}</span>
         <span>{dateLabel(article.date, undefined, t.locale)}</span>
       </div>
       <button className="title-button" onClick={onOpen}>
@@ -209,7 +224,7 @@ function ArticleCard({
     </article>
   );
 }
-function ArticleBody({ article }: { article: Article }) {
+function ArticleBody({ article, tone }: { article: Article; tone: Tone }) {
   const { t } = useLang();
   return (
     <>
@@ -219,7 +234,7 @@ function ArticleBody({ article }: { article: Article }) {
         alt={article.title}
       />
       <div className="article-meta">
-        <span>{article.category}</span>
+        <span data-tone={tone}>{article.category}</span>
         <span>{dateLabel(article.date, undefined, t.locale)}</span>
       </div>
       <p className="article-body">{article.body}</p>
@@ -289,6 +304,17 @@ export default function App() {
   const mainRef = useRef<HTMLElement>(null);
   useScrollReveal(mainRef);
   const [marqueePaused, setMarqueePaused] = useState(false);
+  // The marquee loops forever; stop it while it is scrolled out of view.
+  // A data attribute, not a class, so React's className updates keep it.
+  const marqueeObserver = useRef<IntersectionObserver>();
+  const watchMarquee = useCallback((el: HTMLDivElement | null) => {
+    marqueeObserver.current?.disconnect();
+    if (!el || !("IntersectionObserver" in window)) return;
+    marqueeObserver.current = new IntersectionObserver(([entry]) => {
+      el.dataset.offscreen = String(!entry.isIntersecting);
+    });
+    marqueeObserver.current.observe(el);
+  }, []);
   const [page, setPage] = useState<Page>(readPage);
   const [menu, setMenu] = useState(false);
   const [content, setContent] = useState<Content>({ events: [], news: [] });
@@ -318,9 +344,14 @@ export default function App() {
   useEffect(() => {
     refresh();
     const listener = () => {
-      setPage(readPage());
-      setMenu(false);
-      window.scrollTo({ top: 0 });
+      // The hero's entrance belongs to the first load; after that the page
+      // transition is the arrival.
+      document.documentElement.dataset.arrived = "";
+      withTransition("page", () => {
+        setPage(readPage());
+        setMenu(false);
+        window.scrollTo({ top: 0, behavior: "instant" });
+      });
     };
     window.addEventListener("hashchange", listener);
     return () => window.removeEventListener("hashchange", listener);
@@ -330,9 +361,14 @@ export default function App() {
     if (next === page) window.scrollTo({ top: 0, behavior: "smooth" });
     setMenu(false);
   }
+  const eventTone = categoryTones(content.events.map((event) => event.category));
+  const newsTone = categoryTones(content.news.map((article) => article.category));
   const upcoming = content.events
     .filter((event) => eventEnd(event.date) >= Date.now())
     .sort((a, b) => eventStart(a.date) - eventStart(b.date));
+  const recentPast = content.events
+    .filter((event) => eventEnd(event.date) < Date.now())
+    .sort((a, b) => eventStart(b.date) - eventStart(a.date));
   const shownEvents = content.events
     .filter(
       (event) =>
@@ -407,6 +443,7 @@ export default function App() {
                 onClick={() => setMenu(false)}
               >
                 {t.pages[item]}
+                {page === item && <span className="nav-dot" aria-hidden="true" />}
               </a>
             ))}
           </nav>
@@ -505,6 +542,7 @@ export default function App() {
               </div>
             </section>
             <div
+              ref={watchMarquee}
               className={`marquee${marqueePaused ? " paused" : ""}`}
               aria-label={t.marquee.label}
             >
@@ -562,10 +600,18 @@ export default function App() {
                 <p className="empty-state">{t.homeEvents.empty}</p>
               ) : (
                 <div className="card-grid">
-                  {upcoming.slice(0, 3).map((event) => (
+                  {/* With fewer than three upcoming dates, the latest past
+                      shows fill the row instead of leaving it half empty;
+                      their cards say PAST EVENT. */}
+                  {[
+                    ...upcoming.slice(0, 3),
+                    ...recentPast.slice(0, Math.max(0, 3 - upcoming.length)),
+                  ].map((event, index) => (
                     <EventCard
                       key={event.id}
                       event={event}
+                      tone={eventTone(event.category)}
+                      filler={index >= upcoming.length}
                       onOpen={() => setSelectedEvent(event)}
                     />
                   ))}
@@ -622,6 +668,7 @@ export default function App() {
                     <ArticleCard
                       key={article.id}
                       article={article}
+                      tone={newsTone(article.category)}
                       onOpen={() => setModal({ kind: "article", article })}
                     />
                   ))}
@@ -664,15 +711,24 @@ export default function App() {
               <div className="tabs">
                 <button
                   className={eventTab === "upcoming" ? "active" : ""}
-                  onClick={() => setEventTab("upcoming")}
+                  onClick={() =>
+                    withTransition("filter", () => setEventTab("upcoming"))
+                  }
                 >
-                  {t.eventsPage.comingUp} <span>{upcoming.length}</span>
+                  {t.eventsPage.comingUp}{" "}
+                  <span className="count">{upcoming.length}</span>
+                  {eventTab === "upcoming" && (
+                    <span className="tab-mark" aria-hidden="true" />
+                  )}
                 </button>
                 <button
                   className={eventTab === "past" ? "active" : ""}
-                  onClick={() => setEventTab("past")}
+                  onClick={() => withTransition("filter", () => setEventTab("past"))}
                 >
                   {t.eventsPage.past}
+                  {eventTab === "past" && (
+                    <span className="tab-mark" aria-hidden="true" />
+                  )}
                 </button>
               </div>
               <label className="search">
@@ -693,8 +749,11 @@ export default function App() {
                 <button
                   key={item}
                   className={category === item ? "active" : ""}
-                  onClick={() => setCategory(item)}
+                  onClick={() => withTransition("filter", () => setCategory(item))}
                 >
+                  {item && (
+                    <span className="swatch" data-tone={eventTone(item)} aria-hidden="true" />
+                  )}
                   {item || t.homeEvents.all}
                 </button>
               ))}
@@ -704,6 +763,7 @@ export default function App() {
                 <EventCard
                   key={event.id}
                   event={event}
+                  tone={eventTone(event.category)}
                   onOpen={() => setSelectedEvent(event)}
                 />
               ))}
@@ -739,6 +799,7 @@ export default function App() {
                 <ArticleCard
                   key={article.id}
                   article={article}
+                  tone={newsTone(article.category)}
                   onOpen={() => setModal({ kind: "article", article })}
                 />
               ))}
@@ -761,7 +822,9 @@ export default function App() {
                 <button
                   key={item}
                   className={galleryFilter === item ? "active" : ""}
-                  onClick={() => setGalleryFilter(item)}
+                  onClick={() =>
+                    withTransition("filter", () => setGalleryFilter(item))
+                  }
                 >
                   {t.galleryPage.filters[item]}
                 </button>
@@ -774,6 +837,11 @@ export default function App() {
                     galleryFilter === item.category) && (
                     <button
                       key={item.image}
+                      style={
+                        {
+                          "--vt-name": transitionName("photo", item.image),
+                        } as CSSProperties
+                      }
                       onClick={() => setModal({ kind: "photo", index })}
                     >
                       <img
@@ -934,8 +1002,12 @@ export default function App() {
               target="_blank"
               rel="noreferrer"
             >
-              {t.footer.map}
-              <ArrowUpRight size={15} />
+              {/* The last word and the arrow wrap together. */}
+              {t.footer.map.split(" ").slice(0, -1).join(" ")}{" "}
+              <span className="nowrap">
+                {t.footer.map.split(" ").at(-1)}
+                <ArrowUpRight size={15} />
+              </span>
             </a>
           </div>
         </div>
@@ -1045,7 +1117,10 @@ export default function App() {
           wide={modal.kind === "photo"}
         >
           {modal.kind === "article" ? (
-            <ArticleBody article={localizeArticle(modal.article, lang)} />
+            <ArticleBody
+              article={localizeArticle(modal.article, lang)}
+              tone={newsTone(modal.article.category)}
+            />
           ) : modal.kind === "photo" ? (
             <>
               <img

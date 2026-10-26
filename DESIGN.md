@@ -118,7 +118,7 @@ components:
 
 The site reads like a scrapbook the club keeps of itself: warm unbleached paper, forest-green ink, and the club's own photographs pinned in with a few handwritten asides. Real moments carry the page. A large photo with one dramatically arched corner anchors the hero; paper notes sit slightly askew on top of it (rotated −4° to −6°); a terracotta script line ("it starts with a song ↗") is scrawled underneath. Everything else is orderly and calm, so those few tilted, handwritten touches read as personality rather than noise.
 
-Density is light and editorial. Fraunces display type sets warm, slightly literary headlines with one green italic phrase carrying the emphasis, while Space Grotesk handles everything functional in small, tidy sizes. Surfaces are flat paper on paper, separated by hairline chalk rules; depth appears only when something is lifted (a hovered card, a pinned note, an open dialog). Motion is friendly and tactile: buttons rise on hover and press back down, arrows nudge up-right, chips pop when chosen. All of it switches off under reduced motion.
+Density is light and editorial. Fraunces display type sets warm, slightly literary headlines with one green italic phrase carrying the emphasis, while Space Grotesk handles everything functional in small, tidy sizes. Surfaces are flat paper on paper, separated by hairline chalk rules; depth appears only when something is lifted (a hovered card, a pinned note, an open dialog). Motion is friendly and tactile: buttons rise on hover and press back down, arrows nudge up-right, chips pop when chosen. Moving between pages lays the next sheet onto the scrapbook (the old page lifts away, the new one settles from a 0.6° tilt, the header holds still, and the green nav dot travels to its new link); filters and tabs keep the cards in hand, gliding the ones that stay and pinning new ones in, with the active chip and tab marker sliding across. These use the View Transitions API (`src/lib/viewTransition.ts`) and fall back to an instant swap. Under reduced motion, all movement switches off and page and filter changes become a 160ms cross-fade.
 
 The system is bilingual by construction. Thai swaps in Anuphan (body) and Mitr (display), drops all letter-spacing, opens up display leading, and never fakes an italic.
 
@@ -153,6 +153,18 @@ A botanical palette: one deep green that does nearly all the work, cream and sag
 
 On the green join banner, text uses softened greens rather than pure cream (eyebrow `#bfcdb8`, italic `#d1dfbd`, body `#c4cfc5`) so the banner stays gentle.
 
+### Category Tape
+Categories (event types, journal sections) are color-coded the way a scrapbook color-codes its pages: each gets a strip of washi tape, a light tint with a dark ink of the same hue. Every pair passes 5.6:1.
+- **Sage** tint `#e3eadb`, ink `#2c5040`
+- **Marigold** tint `#f3e7c6`, ink `#6a5114`
+- **River** tint `#dce7ec`, ink `#2b5466`
+- **Clay** tint `#f5e2d3`, ink `#8a4626`
+
+Tones are handed out in that order to the category names sorted alphabetically (`src/lib/categoryTone.ts`), always from the English names so switching to Thai never repaints a label.
+
+### Named Rules
+**The Tape Labels Rule.** Tape colors only ever label a category; they never mark an action, a selection or a status. The label text always names the category, so color is never the only cue.
+
 ### Named Rules
 **The Green Ink Rule.** Kasetsart Forest is the only color for interactive emphasis. A button, active tab, selected chip or link is green; nothing interactive is terracotta at rest.
 
@@ -184,6 +196,8 @@ On the green join banner, text uses softened greens rather than pure cream (eyeb
 
 A centered container of 1260px (1170px for banners and the footer's inner width), with side gutters of 45px on desktop, 30px at ≤1050px, and 22px at ≤760px. Sections breathe at about 77px vertical padding (60px on tablet). The hero is a two-column grid (1.1fr copy / 1fr photo) that stacks on mobile. Card lists use a three-column grid with 24px gaps, dropping to fewer columns as the width narrows. Section headings are a flex row: eyebrow and headline on the left, a "view all" text link aligned to the baseline on the right.
 
+A row of cards is never left half empty: when the home page has fewer than three upcoming events, the most recent past shows fill the row (marked PAST EVENT), and they drop out in the single-column phone layout, where there is no row to fill. Minor closing groups, like the newsletter, do not get full section padding; a Chalk Line rule across the content width marks where they start. Side-by-side headings share a line even when only one of them has an eyebrow.
+
 Breakpoints: 1500px (wide), 1050px (tablet), 760px (mobile, collapsible nav), 650px and 380px (small-phone tightening). The header is sticky at 87px (73px on mobile) with a translucent cream background (`rgba(247,246,240,0.96)`) and a 15px backdrop blur.
 
 ## Elevation & Depth
@@ -202,7 +216,7 @@ Flat by default: paper on paper, separated by Chalk Line hairlines and the occas
 
 ## Shapes
 
-Softly rounded rectangles throughout: 4px for date stickers, 5px for buttons, inputs, search and the language toggle, 7px for cards and the join banner, 12px for dialogs. Filter chips and image tags are full pills (20–30px). Avatars, dots and slideshow controls are circles.
+Softly rounded rectangles throughout: 4px for date stickers, 5px for buttons, inputs, search and the language toggle, 7px for cards and the join banner, 12px for dialogs. Filter chips are full pills (20–30px). Category labels are square-cut tape with torn ends (a zig-zag `clip-path` on both short edges), and on the Events page each category chip carries a small swatch of its tape color. Avatars, dots and slideshow controls are circles.
 
 The signature silhouette is the **arch**: one oversized rounded corner against three tight ones. The hero photo uses `130px 8px 8px 8px` (top-left arch; 105px on small phones); the belonging photo uses `6px 6px 110px 6px` and the About photo `8px 8px 100px 8px` (bottom-right arch). The brand mark echoes it as a small tilted tombstone (`45% 45% 3px 3px`, rotated −6°).
 

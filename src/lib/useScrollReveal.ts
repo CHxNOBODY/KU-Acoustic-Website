@@ -38,7 +38,13 @@ export default function useScrollReveal(root: RefObject<HTMLElement>) {
 
       function scan() {
         container?.querySelectorAll<HTMLElement>(targets).forEach((el) => {
-          if (el.classList.contains("reveal-visible") || el.classList.contains("reveal-pending")) return;
+          if (["reveal-visible", "reveal-pending", "reveal-static"].some((name) => el.classList.contains(name))) return;
+          // A view transition already animates whatever lands on screen; a
+          // second entrance on top of it would play the arrival twice.
+          if (document.documentElement.dataset.transition && el.getBoundingClientRect().top < window.innerHeight) {
+            el.classList.add("reveal-static");
+            return;
+          }
           const siblings = el.parentElement ? Array.from(el.parentElement.children) : [];
           el.style.setProperty("--reveal-delay", `${Math.min(siblings.indexOf(el), 3) * 70}ms`);
           el.classList.add("reveal-pending");
