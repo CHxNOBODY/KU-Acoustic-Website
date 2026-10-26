@@ -5,7 +5,9 @@ import { useLang } from "@/lib/i18n";
 
 const slides = [
   { image: "run-vocal", alt: { en: "Vocalist in the spotlight at Run In Rhythm Concert", th: "นักร้องกลางแสงสปอตไลต์ในคอนเสิร์ต Run In Rhythm" } },
+  { image: "clubroom-jam", alt: { en: "KU Acoustic members sharing snacks on the clubroom floor", th: "สมาชิก KU Acoustic นั่งล้อมวงกินขนมในห้องชมรม" } },
   { image: "run-guitar", alt: { en: "KU Acoustic guitarist performing under blue stage lights", th: "มือกีตาร์ KU Acoustic เล่นใต้แสงไฟสีฟ้าบนเวที" } },
+  { image: "freshy-friends", alt: { en: "The KU Acoustic crew together in front of the Freshy Day stage", th: "ทีม KU Acoustic ถ่ายรูปรวมหน้าเวทีงาน Freshy Day" } },
   { image: "run-duet", alt: { en: "Two KU Acoustic singers sharing the Run In Rhythm stage", th: "นักร้อง KU Acoustic สองคนร่วมเวที Run In Rhythm" } },
   { image: "run-stage", alt: { en: "KU Acoustic performers together on the Run In Rhythm stage", th: "นักแสดง KU Acoustic พร้อมหน้ากันบนเวที Run In Rhythm" } },
   { image: "run-crowd", alt: { en: "The audience singing along at Run In Rhythm Concert", th: "ผู้ชมร้องตามในคอนเสิร์ต Run In Rhythm" } },
@@ -22,6 +24,17 @@ export default function HeroSlideshow() {
   const { lang, t } = useLang();
   const root = useRef<HTMLDivElement>(null);
   const [slide, setSlide] = useState({ current: 0, previous: -1, direction: 1 });
+  // Fetch photos only as they come up (the current one and its neighbours),
+  // so a phone on campus data does not download all of them at once.
+  const [loaded, setLoaded] = useState(() => new Set([0, 1, slides.length - 1]));
+  useEffect(() => {
+    const near = [slide.current - 1, slide.current, slide.current + 1].map(
+      (index) => (index + slides.length) % slides.length,
+    );
+    setLoaded((previous) =>
+      near.every((index) => previous.has(index)) ? previous : new Set([...previous, ...near]),
+    );
+  }, [slide.current]);
   const [paused, setPaused] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
@@ -88,12 +101,23 @@ export default function HeroSlideshow() {
             aria-hidden={index !== slide.current}
             style={{ transform: `translateX(${index === slide.current ? 0 : index === slide.previous ? -slide.direction * 100 : slide.direction * 100}%)` }}
           >
-            <img className="hero-photo" src={photo(item.image, 1200)} alt={item.alt[lang]} loading="eager" decoding="async" fetchPriority={index === 0 ? "high" : "low"} />
+            {loaded.has(index) && (
+              <img
+                className="hero-photo"
+                src={photo(item.image, 1100)}
+                srcSet={[750, 1100, 1600].map((width) => `${photo(item.image, width)} ${width}w`).join(", ")}
+                sizes="(max-width: 760px) calc(100vw - 56px), 46vw"
+                alt={item.alt[lang]}
+                decoding="async"
+                fetchPriority={index === 0 ? "high" : "low"}
+              />
+            )}
           </div>
         ))}
       </div>
       <div className="hero-slide-controls">
         <button type="button" aria-label={t.slideshow.previous} onClick={() => select(slide.current - 1, -1)}><ChevronLeft size={17} /></button>
+        <span className="hero-slide-count" aria-hidden="true">{slide.current + 1} / {slides.length}</span>
         <div className="hero-slide-dots" aria-label={t.slideshow.choose}>
           {slides.map((item, index) => (
             <button

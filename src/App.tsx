@@ -21,8 +21,8 @@ import {
   Menu,
   Music2,
   Search,
+  SlidersHorizontal,
   Sparkles,
-  Users,
   X,
   Youtube,
 } from "lucide-react";
@@ -144,7 +144,7 @@ function EventCard({
       <div className="event-info">
         <div className="event-meta">
           {past ? t.event.past : t.event.comingUp}
-          <span>{event.sample ? t.event.sample : "KU ACOUSTIC"}</span>
+          {event.sample && <span>{t.event.sample}</span>}
         </div>
         <button className="title-button" onClick={onOpen}>
           <h3>{event.title}</h3>
@@ -350,6 +350,32 @@ export default function App() {
   const sortedNews = [...content.news].sort(
     (a, b) => Date.parse(b.date) - Date.parse(a.date),
   );
+  const loadProblem = error && (
+    <div className="backend-error" role="alert">
+      <p>{t.loadError}</p>
+      <div>
+        <button
+          className="text-link"
+          onClick={() => {
+            setLoading(true);
+            refresh();
+          }}
+        >
+          {t.tryAgain}
+          <ArrowRight size={16} />
+        </button>
+        <a
+          className="text-link"
+          href="https://www.instagram.com/kuacoustic_official/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {t.followInstagram}
+          <ArrowUpRight size={16} />
+        </a>
+      </div>
+    </div>
+  );
   return (
     <>
       <a
@@ -413,6 +439,18 @@ export default function App() {
         </div>
       </header>
       <main id="main" tabIndex={-1} ref={mainRef}>
+        {/* The home page reports loading and errors inside its events
+            section; the listing pages report them before their content. */}
+        {(page === "events" || page === "journal") && (
+          <>
+            {loading && (
+              <p className="loading-state" role="status">
+                {t.loading}
+              </p>
+            )}
+            {loadProblem}
+          </>
+        )}
         {page === "home" && (
           <>
             <section className="hero">
@@ -424,22 +462,25 @@ export default function App() {
                 <h1>{t.hero.title}</h1>
                 <p>{t.hero.body}</p>
                 <div className="hero-actions">
-                  <button className="button green" onClick={() => go("events")}>
-                    {t.hero.explore}
+                  <button
+                    className="button green"
+                    onClick={() => setModal({ kind: "membership" })}
+                  >
+                    {t.joinClub}
                     <ArrowUpRight size={18} />
                   </button>
-                  <button className="button plain" onClick={() => go("about")}>
-                    {t.hero.getToKnow}
+                  <button className="button outline" onClick={() => go("events")}>
+                    {t.hero.explore}
                     <ArrowRight size={17} />
                   </button>
                 </div>
                 <div className="hero-members">
                   <div className="avatar-stack">
                     {[
-                      "royal-vocalist",
+                      "exhibition-backstage",
+                      "clubroom-hangout",
                       "royal-bass",
-                      "royal-singer",
-                      "hero-vocal",
+                      "clubroom-door",
                     ].map((id) => (
                       <img src={photo(id, 80)} key={id} alt="" />
                     ))}
@@ -502,17 +543,33 @@ export default function App() {
                   <ArrowUpRight size={17} />
                 </button>
               </div>
-              <div className="card-grid">
-                {upcoming.slice(0, 3).map((event) => (
-                  <EventCard
-                    key={event.id}
-                    event={event}
-                    onOpen={() => setSelectedEvent(event)}
-                  />
-                ))}
-              </div>
-              {!loading && !error && upcoming.length === 0 && (
+              {loading ? (
+                <div className="card-grid">
+                  <p className="sr-only" role="status">
+                    {t.loading}
+                  </p>
+                  {[0, 1, 2].map((index) => (
+                    <div className="card-placeholder" key={index} aria-hidden="true">
+                      <span />
+                      <span />
+                      <span />
+                    </div>
+                  ))}
+                </div>
+              ) : error ? (
+                loadProblem
+              ) : upcoming.length === 0 ? (
                 <p className="empty-state">{t.homeEvents.empty}</p>
+              ) : (
+                <div className="card-grid">
+                  {upcoming.slice(0, 3).map((event) => (
+                    <EventCard
+                      key={event.id}
+                      event={event}
+                      onOpen={() => setSelectedEvent(event)}
+                    />
+                  ))}
+                </div>
               )}
             </section>
             <section className="belong-section">
@@ -528,47 +585,52 @@ export default function App() {
                 <span className="eyebrow">{t.belong.eyebrow}</span>
                 <h2>{t.belong.title}</h2>
                 <p>{t.belong.body}</p>
-                <div className="belong-values">
-                  <span>
-                    <Guitar size={19} />
-                    {t.belong.values[0]}
-                  </span>
-                  <span>
-                    <Users size={19} />
-                    {t.belong.values[1]}
-                  </span>
-                  <span>
-                    <Heart size={19} />
-                    {t.belong.values[2]}
-                  </span>
-                </div>
+                <ul className="belong-roles" aria-label={t.belong.rolesLabel}>
+                  {t.belong.roles.map(([role, detail], index) => {
+                    const Icon = [Guitar, SlidersHorizontal, Heart][index];
+                    return (
+                      <li key={role}>
+                        <Icon size={20} strokeWidth={1.7} aria-hidden="true" />
+                        <span>
+                          <b>{role}</b>
+                          {detail}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
                 <button className="text-link" onClick={() => go("about")}>
                   {t.belong.story}
                   <ArrowUpRight size={17} />
                 </button>
               </div>
             </section>
-            <section className="page-section">
-              <div className="section-heading">
-                <div>
-                  <span className="eyebrow">{t.homeJournal.eyebrow}</span>
-                  <h2>{t.homeJournal.title}</h2>
+            {sortedNews.length > 0 && (
+              <section className="page-section">
+                <div className="section-heading">
+                  <div>
+                    <span className="eyebrow">{t.homeJournal.eyebrow}</span>
+                    <h2>{t.homeJournal.title}</h2>
+                  </div>
+                  <button className="text-link" onClick={() => go("journal")}>
+                    {t.homeJournal.link}
+                    <ArrowUpRight size={17} />
+                  </button>
                 </div>
-                <button className="text-link" onClick={() => go("journal")}>
-                  {t.homeJournal.link}
-                  <ArrowUpRight size={17} />
-                </button>
-              </div>
-              <div className="card-grid">
-                {sortedNews.slice(0, 3).map((article) => (
-                  <ArticleCard
-                    key={article.id}
-                    article={article}
-                    onOpen={() => setModal({ kind: "article", article })}
-                  />
-                ))}
-              </div>
-            </section>
+                <div className="card-grid">
+                  {sortedNews.slice(0, 3).map((article) => (
+                    <ArticleCard
+                      key={article.id}
+                      article={article}
+                      onOpen={() => setModal({ kind: "article", article })}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+            <Newsletter />
+            {/* The invitation to join closes the page: the last thing a
+                prospective member sees is the one action we want. */}
             <section className="join-banner">
               <span className="join-doodle">
                 <Guitar size={74} strokeWidth={1} />
@@ -578,15 +640,17 @@ export default function App() {
                 <h2>{t.joinBanner.title}</h2>
                 <p>{t.joinBanner.body}</p>
               </div>
-              <button
-                className="button cream"
-                onClick={() => setModal({ kind: "membership" })}
-              >
-                {t.joinBanner.cta}
-                <ArrowUpRight size={18} />
-              </button>
+              <div className="join-action">
+                <button
+                  className="button cream"
+                  onClick={() => setModal({ kind: "membership" })}
+                >
+                  {t.joinClub}
+                  <ArrowUpRight size={18} />
+                </button>
+                <small>{t.joinBanner.next}</small>
+              </div>
             </section>
-            <Newsletter />
           </>
         )}
         {page === "events" && (
@@ -807,27 +871,6 @@ export default function App() {
           </>
         )}
         {page === "admin" && <Admin content={content} refresh={refresh} />}
-        {loading &&
-          (page === "home" || page === "events" || page === "journal") && (
-            <p className="loading-state" role="status">
-              {t.loading}
-            </p>
-          )}
-        {error && (
-          <div className="backend-error" role="alert">
-            <p>{t.loadError}</p>
-            <button
-              className="text-link"
-              onClick={() => {
-                setLoading(true);
-                refresh();
-              }}
-            >
-              {t.tryAgain}
-              <ArrowRight size={16} />
-            </button>
-          </div>
-        )}
       </main>
       <footer className="site-footer">
         <div className="footer-top">

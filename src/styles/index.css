@@ -8,10 +8,11 @@
   --green: #234c3e;
   --green-dark: #173b30;
   --ink: #252c26;
-  --muted: #73776d;
+  --muted: #666a60;
   --line: #dedfd5;
   --sage: #e8ede3;
   --orange: #be6d41;
+  --clay-ink: #a0552e;
   --background: 60 30% 96%;
   --foreground: 130 9% 16%;
   --border: 65 14% 85%;
@@ -127,9 +128,9 @@ svg {
   top: 10px;
 }
 .eyebrow {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 1.9px;
+  letter-spacing: 1.8px;
   display: inline-flex;
   align-items: center;
   gap: 9px;
@@ -168,6 +169,11 @@ svg {
   border: 1px solid var(--line);
   background: transparent;
 }
+/* Tailwind also emits an `outline` utility (outline-style: solid) for this
+   class name; cancel it so only keyboard focus draws a ring. */
+.button.outline:not(:focus-visible) {
+  outline: none;
+}
 .plain {
   padding-left: 8px;
   padding-right: 8px;
@@ -177,13 +183,14 @@ svg {
   display: inline-flex;
   align-items: center;
   gap: 15px;
+  min-height: 44px;
   font-size: 12px;
   font-weight: 500;
   color: var(--green);
   padding: 8px 0;
 }
 .text-link:hover {
-  color: var(--orange);
+  color: var(--clay-ink);
 }
 .icon-button {
   display: flex;
@@ -251,7 +258,7 @@ svg {
   align-items: center;
 }
 .main-nav a {
-  font-size: 12px;
+  font-size: 13px;
   color: #666c63;
   padding: 32px 0;
   position: relative;
@@ -272,7 +279,7 @@ svg {
 }
 .header-join {
   white-space: nowrap;
-  font-size: 11px;
+  font-size: 12px;
   min-height: 40px;
   padding: 10px 16px;
   gap: 15px;
@@ -290,7 +297,7 @@ svg {
   padding: 8px 12px;
   border: 1px solid var(--line);
   border-radius: 5px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--green);
   white-space: nowrap;
@@ -314,6 +321,9 @@ html[lang="th"] :is(h1, h2) {
 html[lang="th"] :is(h1, h2, h3) em,
 html[lang="th"] .handwritten {
   font-style: normal;
+}
+html[lang="th"] .photo-corner {
+  display: none;
 }
 .hero {
   max-width: 1260px;
@@ -343,13 +353,14 @@ html[lang="th"] .handwritten {
 }
 .hero-copy > p {
   color: var(--muted);
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.85;
 }
 .hero-actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 20px;
+  gap: 12px 20px;
   margin-top: 30px;
 }
 .hero-members {
@@ -374,7 +385,7 @@ html[lang="th"] .handwritten {
   margin-left: 0;
 }
 .hero-members p {
-  font-size: 9px;
+  font-size: 12px;
   line-height: 1.8;
 }
 .hero-members b {
@@ -443,9 +454,20 @@ html[lang="th"] .handwritten {
 .hero-slide-controls button:is(:hover, :focus-visible) { background: #ffffff25; }
 .hero-slide-controls :focus-visible { outline-color: var(--paper); outline-offset: 1px; }
 .hero-slide-dots { display: flex; }
-.hero-slide-dots button { width: 22px; }
+.hero-slide-dots button { width: 24px; }
+.hero-slide-count {
+  display: none;
+  min-width: 52px;
+  text-align: center;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+/* A row of fourteen dots cannot reach a 44px target on a phone, so phones
+   get a counter between larger previous and next buttons instead. */
 @media (max-width: 760px) {
-  .hero-slide-dots button { width: 15px; }
+  .hero-slide-dots { display: none; }
+  .hero-slide-count { display: block; }
+  .hero-slide-controls button { width: 44px; height: 44px; }
 }
 .hero-slide-dots span {
   width: 5px;
@@ -460,7 +482,7 @@ html[lang="th"] .handwritten {
   position: absolute;
   right: 24px;
   top: 23px;
-  font-size: 8px;
+  font-size: 10px;
   letter-spacing: 1.7px;
   color: #fffde8;
   writing-mode: vertical-rl;
@@ -478,8 +500,8 @@ html[lang="th"] .handwritten {
   transform: rotate(-4deg);
   box-shadow: 0 8px 30px #00000015;
   color: var(--green);
-  font-size: 11px;
-  line-height: 1.8;
+  font-size: 13px;
+  line-height: 1.7;
 }
 .hero-note > b {
   font-weight: 500;
@@ -502,7 +524,7 @@ html[lang="th"] .handwritten {
   right: 13px;
   font-family: "Fraunces", "Mitr", serif;
   font-style: italic;
-  color: var(--orange);
+  color: var(--clay-ink);
   font-size: 18px;
   transform: rotate(-6deg);
 }
@@ -621,7 +643,7 @@ html[lang="th"] .handwritten {
   line-height: 1.2;
 }
 .date-sticker > span {
-  font-size: 8px;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 1px;
   margin-top: 2px;
@@ -633,7 +655,7 @@ html[lang="th"] .handwritten {
   padding: 5px 10px;
   border-radius: 20px;
   background: #fffef9e8;
-  font-size: 9px;
+  font-size: 11px;
   color: var(--green);
 }
 .event-info {
@@ -653,13 +675,13 @@ html[lang="th"] .handwritten {
 .event-meta {
   display: flex;
   justify-content: space-between;
-  font-size: 8px;
-  letter-spacing: 1.4px;
-  color: var(--orange);
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  color: var(--clay-ink);
   margin-bottom: 11px;
 }
 .event-meta > span {
-  font-size: 7px;
+  font-size: 11px;
   letter-spacing: 1px;
   color: var(--muted);
 }
@@ -676,7 +698,7 @@ html[lang="th"] .handwritten {
   align-items: center;
   margin-top: 11px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 13px;
 }
 .event-bottom {
   border-top: 1px solid var(--line);
@@ -685,7 +707,7 @@ html[lang="th"] .handwritten {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 10px;
+  font-size: 13px;
 }
 .event-bottom > span,
 .event-bottom > button {
@@ -729,30 +751,45 @@ html[lang="th"] .handwritten {
   bottom: 24px;
   left: 25px;
   color: white;
-  font-size: 8px;
-  letter-spacing: 1.7px;
+  font-size: 11px;
+  letter-spacing: 1.5px;
 }
 .belong-copy h2 {
   margin: 17px 0 19px;
   font-size: 42px;
 }
 .belong-copy > p {
-  font-size: 12px;
+  font-size: 15px;
   max-width: 400px;
   color: var(--muted);
 }
-.belong-values {
+/* Three ways in, ruled like a songbook index rather than boxed as cards. */
+.belong-roles {
+  list-style: none;
+  margin: 26px 0 20px;
+  padding: 0;
+  max-width: 440px;
+  border-top: 1px solid #d6dacd;
+}
+.belong-roles li {
   display: flex;
-  flex-direction: column;
-  gap: 13px;
-  margin: 24px 0 19px;
-  font-size: 11px;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid #d6dacd;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+.belong-roles svg {
+  margin-top: 2px;
   color: var(--green);
 }
-.belong-values span {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.belong-roles b {
+  display: block;
+  margin-bottom: 2px;
+  font-weight: 600;
+  color: var(--green);
 }
 .article-image {
   height: 204px;
@@ -774,7 +811,7 @@ html[lang="th"] .handwritten {
   align-items: center;
   justify-content: space-between;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 12px;
   margin: 18px 0 12px;
 }
 .article-meta > span:first-child {
@@ -789,15 +826,15 @@ html[lang="th"] .handwritten {
 }
 .article-card > p {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
   margin: 12px 0 12px;
   max-width: 330px;
 }
 .article-card .text-link {
-  font-size: 10px;
+  font-size: 12px;
 }
 .join-banner {
-  margin: 0 auto;
+  margin: 0 auto 77px;
   max-width: 1170px;
   background: var(--green);
   color: var(--cream);
@@ -809,7 +846,7 @@ html[lang="th"] .handwritten {
 }
 .join-banner .eyebrow {
   color: #bfcdb8;
-  font-size: 8px;
+  font-size: 11px;
 }
 .join-banner h2 {
   font-size: 36px;
@@ -820,16 +857,28 @@ html[lang="th"] .handwritten {
 }
 .join-banner p {
   color: #c4cfc5;
-  font-size: 11px;
+  font-size: 15px;
   margin-top: 9px;
 }
 .join-doodle {
   color: #bed0ab;
   transform: rotate(-15deg);
 }
-.join-banner > .button {
+.join-action {
   margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: 270px;
+}
+.join-action .button {
   white-space: nowrap;
+}
+.join-action small {
+  color: #c4cfc5;
+  font-size: 12px;
+  line-height: 1.6;
 }
 .newsletter {
   max-width: 1260px;
@@ -845,7 +894,7 @@ html[lang="th"] .handwritten {
   margin-top: 11px;
 }
 .newsletter p {
-  font-size: 11px;
+  font-size: 15px;
   color: var(--muted);
   margin-top: 11px;
 }
@@ -864,14 +913,22 @@ html[lang="th"] .handwritten {
   background: none;
   padding: 8px 0;
   outline: none;
-  font-size: 12px;
+  font-size: 16px;
 }
 .subscribe-field button {
+  display: grid;
+  place-items: center;
+  min-width: 44px;
+  min-height: 44px;
   color: var(--green);
-  padding: 5px 8px;
+  padding: 0;
+  border-radius: 5px;
+}
+.subscribe-field button:hover:not(:disabled) {
+  background: var(--sage);
 }
 .newsletter small {
-  font-size: 8px;
+  font-size: 12px;
   color: var(--muted);
   display: block;
   margin-top: 12px;
@@ -890,15 +947,21 @@ html[lang="th"] .handwritten {
   gap: 35px;
 }
 .footer-top > div > p {
-  font-size: 11px;
+  font-size: 14px;
   color: var(--muted);
   margin-top: 19px;
 }
 .socials {
   display: flex;
-  gap: 15px;
-  margin-top: 20px;
+  gap: 2px;
+  margin: 12px 0 0 -12px;
   color: var(--green);
+}
+.socials a {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
 }
 .socials a:hover {
   color: var(--orange);
@@ -911,7 +974,7 @@ html[lang="th"] .handwritten {
 }
 .footer-links > span,
 .footer-location > span {
-  font-size: 8px;
+  font-size: 11px;
   letter-spacing: 1.4px;
   color: #5a6f59;
   font-weight: 500;
@@ -919,7 +982,7 @@ html[lang="th"] .handwritten {
 }
 .footer-links a,
 .footer-links button {
-  font-size: 11px;
+  font-size: 14px;
   color: #60695e;
   padding: 0;
 }
@@ -932,7 +995,7 @@ html[lang="th"] .handwritten {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 10px;
+  font-size: 14px;
   color: var(--green);
   margin-top: 14px;
 }
@@ -943,8 +1006,8 @@ html[lang="th"] .handwritten {
   display: flex;
   align-items: center;
   gap: 25px;
-  color: #798372;
-  font-size: 9px;
+  color: var(--muted);
+  font-size: 12px;
 }
 .footer-bottom > a {
   margin-left: auto;
@@ -954,7 +1017,7 @@ html[lang="th"] .handwritten {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 9px;
+  font-size: 12px;
 }
 .up-arrow {
   transform: rotate(180deg);
@@ -1289,7 +1352,7 @@ html[lang="th"] .handwritten {
   display: inline-block;
   background: var(--sage);
   color: var(--green);
-  font-size: 10px;
+  font-size: 11px;
   padding: 5px 10px;
   border-radius: 20px;
 }
@@ -1304,7 +1367,7 @@ html[lang="th"] .handwritten {
 .dialog .sample-note {
   background: #f0e8d7;
   border: 1px solid #e1d5bb;
-  font-size: 11px;
+  font-size: 12px;
   padding: 12px;
   border-radius: 5px;
   color: #75623e;
@@ -1316,11 +1379,11 @@ html[lang="th"] .handwritten {
   margin-top: 20px;
 }
 .dialog-actions .button {
-  font-size: 11px;
+  font-size: 12px;
   gap: 10px;
 }
 .form-intro {
-  font-size: 12px !important;
+  font-size: 14px !important;
   margin-bottom: 24px !important;
 }
 .club-form {
@@ -1333,7 +1396,7 @@ html[lang="th"] .handwritten {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  font-size: 11px;
+  font-size: 13px;
   color: var(--green);
   font-weight: 500;
 }
@@ -1346,8 +1409,8 @@ html[lang="th"] .handwritten {
   border: 1px solid var(--line);
   border-radius: 5px;
   padding: 12px 13px;
-  min-height: 43px;
-  font-size: 12px;
+  min-height: 44px;
+  font-size: 14px;
   color: var(--ink);
   font-weight: 400;
   min-width: 0;
@@ -1369,7 +1432,7 @@ html[lang="th"] .handwritten {
   gap: 8px;
 }
 .field-label {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--green);
   font-weight: 500;
 }
@@ -1442,7 +1505,7 @@ html[lang="th"] .handwritten {
 }
 .calendar-grid .weekday {
   padding: 4px 0 6px;
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--muted);
@@ -1493,7 +1556,7 @@ html[lang="th"] .handwritten {
 .time-picker legend {
   padding: 0;
   margin-bottom: 8px;
-  font-size: 11px;
+  font-size: 13px;
   color: var(--green);
   font-weight: 500;
 }
@@ -1571,7 +1634,7 @@ html[lang="th"] .handwritten {
   flex-direction: row;
   align-items: flex-start;
   gap: 9px;
-  font-size: 10px;
+  font-size: 12px;
   color: var(--muted);
   font-weight: 400;
   line-height: 1.6;
@@ -1642,7 +1705,64 @@ html[lang="th"] .handwritten {
   background: #f4dfd6;
 }
 .backend-error p {
-  font-size: 13px;
+  font-size: 14px;
+}
+.backend-error > div {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px 28px;
+  margin-top: 6px;
+}
+.home-events .backend-error {
+  margin: 0;
+}
+.empty-state {
+  font-size: 14px;
+}
+/* Paper-toned stand-ins in the shape of event cards while content loads. */
+.card-placeholder {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px 20px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--paper);
+}
+.card-placeholder span {
+  height: 12px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--sage), #f1f3ec, var(--sage));
+  background-size: 200% 100%;
+  animation: placeholder-shimmer 1.4s ease-in-out infinite;
+}
+.card-placeholder span:first-child {
+  width: 49px;
+  height: 52px;
+  margin-bottom: 6px;
+}
+.card-placeholder span:nth-child(2) {
+  width: 80%;
+  height: 20px;
+}
+.card-placeholder span:last-child {
+  width: 55%;
+}
+@keyframes placeholder-shimmer {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+/* Long titles stop at three lines on cards; the full title is in the
+   event or story dialog. */
+.event-info h3,
+.article-card h3 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+  overflow-wrap: anywhere;
 }
 .admin-login {
   max-width: 480px;
@@ -1801,8 +1921,10 @@ html[lang="th"] .handwritten {
   .brand {
     font-size: 17px;
   }
+  /* The subline is legible only at full size; below that the mark and
+     name carry the lockup. */
   .brand small {
-    font-size: 6px;
+    display: none;
   }
   .hero {
     padding: 55px 30px;
@@ -1816,13 +1938,13 @@ html[lang="th"] .handwritten {
     font-size: 49px;
   }
   .hero-copy > p {
-    font-size: 12px;
+    font-size: 14px;
   }
   .hero-actions {
     gap: 10px;
   }
   .hero-actions .button {
-    font-size: 11px;
+    font-size: 12px;
     padding: 12px 15px;
     gap: 10px;
   }
@@ -1849,7 +1971,7 @@ html[lang="th"] .handwritten {
     height: 365px;
   }
   .join-banner {
-    margin: 0 30px;
+    margin: 0 30px 60px;
     padding: 35px 30px;
     gap: 20px;
   }
@@ -1880,11 +2002,11 @@ html[lang="th"] .handwritten {
 @media (max-width: 760px) {
   .header-inner {
     height: 73px;
-    padding: 0 22px;
-    gap: 14px;
+    padding: 0 18px;
+    gap: 8px;
   }
   .brand {
-    font-size: 17px;
+    font-size: 16px;
     gap: 8px;
   }
   .brand-mark {
@@ -1894,32 +2016,35 @@ html[lang="th"] .handwritten {
   .brand-mark svg {
     width: 23px;
   }
-  .brand small {
-    font-size: 5.5px;
-  }
   .mobile-toggle {
     display: flex;
+    min-width: 44px;
+    min-height: 44px;
   }
   .header-actions {
     margin-left: auto;
     gap: 6px;
   }
   .lang-toggle {
-    min-height: 36px;
+    min-height: 44px;
+    min-width: 44px;
+    justify-content: center;
     padding: 8px 9px;
-    font-size: 10px;
+    font-size: 12px;
   }
   .lang-toggle svg {
     display: none;
   }
   .header-join {
-    font-size: 10px;
-    min-height: 36px;
+    font-size: 12px;
+    min-height: 44px;
     padding: 8px 11px;
     gap: 7px;
   }
+  /* Join, language and menu all keep 44px targets, so the label carries
+     the join button on its own. */
   .header-join svg {
-    width: 13px;
+    display: none;
   }
   .main-nav {
     display: none;
@@ -1960,7 +2085,7 @@ html[lang="th"] .handwritten {
     margin: 20px 0;
   }
   .hero-copy > p {
-    font-size: 12px;
+    font-size: 14px;
     max-width: 420px;
   }
   .hero-actions {
@@ -1969,7 +2094,7 @@ html[lang="th"] .handwritten {
   }
   .hero-actions .button {
     padding: 13px 18px;
-    font-size: 11px;
+    font-size: 12px;
   }
   .hero-members {
     margin-top: 28px;
@@ -1986,7 +2111,7 @@ html[lang="th"] .handwritten {
   .hero-note {
     left: -8px;
     bottom: 28px;
-    font-size: 11px;
+    font-size: 12px;
     padding: 15px 18px;
   }
   .handwritten {
@@ -2017,12 +2142,12 @@ html[lang="th"] .handwritten {
     letter-spacing: -1px;
   }
   .section-heading .text-link {
-    font-size: 10px;
+    font-size: 12px;
     gap: 6px;
     flex-shrink: 0;
   }
   .eyebrow {
-    font-size: 8px;
+    font-size: 11px;
     letter-spacing: 1.5px;
   }
   .card-grid {
@@ -2038,17 +2163,9 @@ html[lang="th"] .handwritten {
   .event-info h3 {
     font-size: 22px;
   }
-  .event-info > p {
-    font-size: 11px;
-  }
-  .event-meta {
-    font-size: 9px;
-  }
-  .event-meta > span {
-    font-size: 8px;
-  }
+  .event-info > p,
   .event-bottom {
-    font-size: 11px;
+    font-size: 13px;
   }
   .belong-section {
     grid-template-columns: 1fr;
@@ -2064,10 +2181,7 @@ html[lang="th"] .handwritten {
   }
   .belong-copy > p {
     max-width: none;
-    font-size: 12px;
-  }
-  .belong-values {
-    font-size: 12px;
+    font-size: 14px;
   }
   .article-image {
     height: 245px;
@@ -2078,27 +2192,21 @@ html[lang="th"] .handwritten {
   }
   .article-card > p {
     max-width: none;
-    font-size: 12px;
-  }
-  .article-meta {
-    font-size: 10px;
-  }
-  .article-card .text-link {
-    font-size: 11px;
   }
   .join-banner {
-    margin: 0 24px;
+    margin: 0 24px 48px;
     display: block;
     padding: 33px 27px;
+  }
+  .join-action {
+    margin: 24px 0 0;
+    max-width: none;
   }
   .join-banner h2 {
     font-size: 34px;
   }
   .join-banner p {
-    font-size: 12px;
-  }
-  .join-banner .button {
-    margin-top: 24px;
+    font-size: 14px;
   }
   .newsletter {
     padding: 46px 24px;
@@ -2111,19 +2219,12 @@ html[lang="th"] .handwritten {
     width: 100%;
     margin-top: 27px;
   }
-  .newsletter small {
-    font-size: 9px;
-  }
   .site-footer {
     padding: 39px 24px 23px;
   }
   .footer-top {
     grid-template-columns: 1fr 1fr;
     gap: 35px 25px;
-  }
-  .footer-links > span,
-  .footer-location > span {
-    font-size: 7px;
   }
   .footer-top .brand {
     font-size: 16px;
@@ -2132,7 +2233,7 @@ html[lang="th"] .handwritten {
     flex-wrap: wrap;
     gap: 16px;
     margin-top: 31px;
-    font-size: 8px;
+    font-size: 12px;
   }
   .footer-bottom > span {
     width: 100%;
@@ -2255,6 +2356,11 @@ html[lang="th"] .handwritten {
   .form-row {
     gap: 10px;
   }
+  .club-form input,
+  .club-form select,
+  .club-form textarea {
+    font-size: 16px;
+  }
   .dashboard-stats {
     grid-template-columns: 1fr 1fr;
     gap: 12px;
@@ -2295,26 +2401,17 @@ html[lang="th"] .handwritten {
 }
 @media (max-width: 380px) {
   .header-inner {
-    padding: 0 15px;
-    gap: 7px;
+    padding: 0 14px;
+    gap: 6px;
   }
   .header-actions {
     gap: 4px;
   }
-  .header-join svg {
-    display: none;
-  }
   .lang-toggle {
     padding: 8px 6px;
   }
-  .mobile-toggle {
-    padding: 4px;
-  }
   .brand {
     font-size: 15px;
-  }
-  .brand small {
-    font-size: 5px;
   }
   .header-join {
     padding: 8px;
@@ -2325,7 +2422,7 @@ html[lang="th"] .handwritten {
   }
   .hero-actions .button {
     padding: 12px 13px;
-    font-size: 10px;
+    font-size: 12px;
   }
   .hero-visual {
     height: 340px;
@@ -2418,7 +2515,7 @@ html[lang="th"] .handwritten {
   flex-shrink: 0;
   gap: 44px;
   white-space: nowrap;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   letter-spacing: 3px;
   color: var(--green);
@@ -2428,13 +2525,15 @@ html[lang="th"] .handwritten {
 .marquee:focus-within .marquee-track { animation-play-state: paused; }
 .marquee-control {
   position: absolute;
-  right: 12px;
-  padding: 7px 11px;
+  right: 8px;
+  min-height: 40px;
+  min-width: 52px;
+  padding: 0 12px;
   border: 1px solid #bdc9b5;
   border-radius: 4px;
   background: var(--sage);
   color: var(--green);
-  font-size: 10px;
+  font-size: 12px;
 }
 .button > svg,
 .text-link > svg,
@@ -2586,7 +2685,7 @@ a:is(:hover, :focus-visible) .brand-mark { transform: rotate(3deg); }
 @media (max-width: 650px) {
   .hero-slideshow { border-top-left-radius: 105px; }
   .marquee-group { gap: 26px; padding-right: 26px; }
-  .marquee-group > span { gap: 26px; font-size: 9px; }
+  .marquee-group > span { gap: 26px; font-size: 11px; letter-spacing: 2px; }
   .main-nav.open { animation: arrive 240ms ease-out; }
   .main-nav a::before { bottom: 0; }
 }

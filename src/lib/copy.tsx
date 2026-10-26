@@ -72,10 +72,9 @@ const en = {
         <br className="desktop-break" /> by the love of making music.
       </>
     ),
-    explore: "Explore our events",
-    getToKnow: "Get to know us",
-    members: "Different voices. One community.",
-    since: "Making memories since 1989.",
+    explore: "See upcoming events",
+    members: "40+ active members, since 1989",
+    since: "Open to students from every faculty.",
     photoCorner: "LIVE A LITTLE. PLAY A LOT.",
     note: (
       <>
@@ -116,11 +115,12 @@ const en = {
         Stay for <em>the people.</em>
       </>
     ),
-    body: "From your first chord to your first encore, you don’t have to do it alone. We’re a home for curious beginners, seasoned performers, and everyone who just loves a good song.",
-    values: [
-      "All sounds welcome",
-      "Every faculty, one family",
-      "Passion over perfection",
+    body: "On stage, behind the sound desk, or in the front row, you don’t have to do it alone. We’re a home for curious beginners, seasoned performers, the crew behind every show, and everyone who just loves a good song.",
+    rolesLabel: "Ways to be part of KU Acoustic",
+    roles: [
+      ["Play", "Sing, strum, or pick up an instrument for the first time."],
+      ["Make the show happen", "Run sound, help backstage, or create for the club."],
+      ["Just love music", "Come for the rehearsals, the shows, and the company."],
     ],
     story: "This is our story",
   },
@@ -140,8 +140,8 @@ const en = {
         There’s a place for <em>you</em> here.
       </>
     ),
-    body: "Bring your talent. Bring your curiosity. Just bring yourself.",
-    cta: "Find your people",
+    body: "Play, run sound, or just love a good song. Bring yourself, and we’ll help you find your place.",
+    next: "It’s one short form. The committee reviews every application and follows up by email.",
   },
   eventsPage: {
     eyebrow: "LET’S MAKE SOME MEMORIES",
@@ -238,8 +238,9 @@ const en = {
   },
   loading: "Tuning things up… Loading club content.",
   loadError:
-    "The club content could not be loaded. Make sure the backend is running.",
+    "We couldn’t load the latest events and stories. Check your connection and try again.",
   tryAgain: "Try again",
+  followInstagram: "Get updates on Instagram",
   footer: {
     tagline: (
       <>
@@ -265,7 +266,7 @@ const en = {
     backToTop: "Back to top",
   },
   modalTitles: {
-    membership: "Find your people.",
+    membership: "Join KU Acoustic.",
     booking: "A little room to rehearse.",
     contact: "Let’s make something happen.",
     registration: "See you at the show.",
@@ -404,10 +405,9 @@ const th: Copy = {
         <br className="desktop-break" /> ด้วยความรักในการทำดนตรี
       </>
     ),
-    explore: "ดูกิจกรรมของเรา",
-    getToKnow: "มารู้จักเรา",
-    members: "ต่างเสียง แต่เป็นครอบครัวเดียวกัน",
-    since: "สร้างความทรงจำร่วมกันตั้งแต่ปี 2532",
+    explore: "ดูกิจกรรมที่กำลังจะมา",
+    members: "สมาชิกกว่า 40 คน ตั้งแต่ปี 2532",
+    since: "เปิดรับนักศึกษาทุกคณะ",
     photoCorner: "ใช้ชีวิตให้สนุก เล่นดนตรีให้เต็มที่",
     note: (
       <>
@@ -447,11 +447,12 @@ const th: Copy = {
         อยู่ต่อเพราะ<em>ผู้คน</em>
       </>
     ),
-    body: "ตั้งแต่คอร์ดแรกจนถึงอังกอร์ครั้งแรก คุณไม่ต้องทำมันคนเดียว ที่นี่เป็นบ้านของมือใหม่ที่อยากลอง นักดนตรีที่มีประสบการณ์ และทุกคนที่รักเพลงดี ๆ",
-    values: [
-      "ทุกเสียงยินดีต้อนรับ",
-      "ทุกคณะ หนึ่งครอบครัว",
-      "ใจรักสำคัญกว่าความสมบูรณ์แบบ",
+    body: "จะอยู่บนเวที หลังโต๊ะคุมเสียง หรือแถวหน้าสุดของผู้ชม คุณก็ไม่ต้องทำมันคนเดียว ที่นี่เป็นบ้านของมือใหม่ที่อยากลอง นักดนตรีที่มีประสบการณ์ ทีมงานเบื้องหลังทุกโชว์ และทุกคนที่รักเพลงดี ๆ",
+    rolesLabel: "ร่วมเป็นส่วนหนึ่งของ KU Acoustic ได้หลายแบบ",
+    roles: [
+      ["เล่นดนตรี", "ร้อง ดีด หรือเริ่มจับเครื่องดนตรีเป็นครั้งแรก"],
+      ["อยู่เบื้องหลังโชว์", "ดูแลระบบเสียง ช่วยงานหลังเวที หรือสร้างสรรค์งานให้ชมรม"],
+      ["รักเสียงเพลง", "มาร่วมซ้อม ดูโชว์ และใช้เวลาดี ๆ ด้วยกัน"],
     ],
     story: "นี่คือเรื่องราวของเรา",
   },
@@ -471,8 +472,8 @@ const th: Copy = {
         ที่นี่มีที่สำหรับ<em>คุณ</em>
       </>
     ),
-    body: "พกพรสวรรค์มา พกความอยากรู้มา หรือแค่พาตัวเองมาก็พอ",
-    cta: "มาเจอเพื่อนใหม่",
+    body: "จะเล่นดนตรี ดูแลเสียง หรือแค่รักเพลงดี ๆ ก็มาได้ แค่พาตัวเองมา แล้วเราจะช่วยหาที่ของคุณ",
+    next: "กรอกแบบฟอร์มสั้น ๆ เพียงหนึ่งหน้า คณะกรรมการชมรมจะพิจารณาทุกใบสมัครและติดต่อกลับทางอีเมล",
   },
   eventsPage: {
     eyebrow: "มาสร้างความทรงจำด้วยกัน",
@@ -568,8 +569,9 @@ const th: Copy = {
     ],
   },
   loading: "กำลังตั้งสาย… กำลังโหลดเนื้อหาของชมรม",
-  loadError: "ไม่สามารถโหลดเนื้อหาของชมรมได้ โปรดตรวจสอบว่าระบบหลังบ้านทำงานอยู่",
+  loadError: "โหลดกิจกรรมและเรื่องเล่าล่าสุดไม่สำเร็จ ตรวจสอบการเชื่อมต่อแล้วลองอีกครั้ง",
   tryAgain: "ลองอีกครั้ง",
+  followInstagram: "ติดตามข่าวสารบน Instagram",
   footer: {
     tagline: (
       <>
@@ -596,7 +598,7 @@ const th: Copy = {
     backToTop: "กลับขึ้นด้านบน",
   },
   modalTitles: {
-    membership: "มาเจอเพื่อนใหม่กัน",
+    membership: "สมัครเข้าชมรม KU Acoustic",
     booking: "พื้นที่เล็ก ๆ สำหรับซ้อม",
     contact: "มาสร้างอะไรดี ๆ ด้วยกัน",
     registration: "แล้วเจอกันที่งาน",
